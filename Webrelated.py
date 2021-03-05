@@ -98,6 +98,8 @@ def geturltitle(url, urltype, document = None):
             rawtitle = 'unknown'
         # remove some usless str. bilibli and youtube title has some useless suffix
         title = rawtitle.split('_哔哩哔哩 (')[0].split(' - YouTube')[0]
+
+        title = title.replace('â€“',' ')
         return title
 
     elif urltype == 'pdf':

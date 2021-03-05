@@ -1021,37 +1021,11 @@ class ImageWidget(QLabel):
         if '#later' not in orignaltag:
             # there is no #like tag, then add it
             newtag = orignaltag + ' #later'
-            self.laterbutton.setStyleSheet(''' 
-                                         QPushButton
-                                         {background-image : url(./pics/later.png);
-                                         border-radius: 5px;
-                                         border-width: 1px;
-                                         border-color: gray;
-                                         border-style: outset;}
-                                         QPushButton:hover
-                                         {border-color: white;
-                                         border-style: outset;}
-                                         QPushButton:pressed
-                                         {border-color: gray;
-                                         border-style: outset;}
-                                         ''')
+            self.laterbutton.setStyleSheet(laterstyle)
         else:
             # there is #later tage, then deleted its
             newtag = orignaltag.replace(' #later', '')
-            self.laterbutton.setStyleSheet(''' 
-                                                 QPushButton
-                                                 {background-image : url(./pics/unlater.png);
-                                                 border-radius: 5px;
-                                                 border-width: 1px;
-                                                 border-color: gray;
-                                                 border-style: outset;}
-                                                 QPushButton:hover
-                                                 {border-color: white;
-                                                 border-style: outset;}
-                                                 QPushButton:pressed
-                                                 {border-color: gray;
-                                                 border-style: outset;}
-                                                 ''')
+            self.laterbutton.setStyleSheet(unlaterstyle)
         updatebybirthday(birthday=self.birthday, tag=newtag)
         self.dbcon.commit()
         self.parent.triggermodify(self.birthday, 'tag')
