@@ -1,5 +1,4 @@
-[head](https://user-images.githubusercontent.com/36077492/110153078-837b9d80-7e1d-11eb-893f-4b1ce2191689.jpg)
-
+Idearry
 
 This software is made for collecting, searching, and managing websites and local files.
 
