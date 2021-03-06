@@ -14,14 +14,12 @@ This software is made for collecting, searching, and managing websites and local
 ****
 ### [Quick start](#quickstart)
 1. Drag a link or file into the searchbar
-* ![dragin website](https://user-images.githubusercontent.com/36077492/110198986-29b4bb00-7e91-11eb-96d9-bec95d409a89.gif)
+* ![dragin website](https://user-images.githubusercontent.com/36077492/110199404-2c181480-7e93-11eb-8d29-2c972d54e26f.gif)
 2. Add/Delete tags
-* ![addremove](https://user-images.githubusercontent.com/36077492/110199067-76989180-7e91-11eb-99eb-85bccddd5b9f.gif)
+* ![addremove](https://user-images.githubusercontent.com/36077492/110199447-59fd5900-7e93-11eb-9187-5beac962e3d1.gif)
 ****
 ### [Search](#search)
-1. Basic search
-* ![search](https://user-images.githubusercontent.com/36077492/110199180-1b1ad380-7e92-11eb-95eb-8e148bff5fe0.gif)
-2. Search mulitple tags with and or syntax
-* ![search and](https://user-images.githubusercontent.com/36077492/110199293-bdd35200-7e92-11eb-99af-c4baf08ace11.gif)
+![search](https://user-images.githubusercontent.com/36077492/110199522-b8c2d280-7e93-11eb-8409-7ff2dc793437.gif)
+
  
 
