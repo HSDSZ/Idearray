@@ -1,5 +1,5 @@
-![head](https://user-images.githubusercontent.com/36077492/110198295-7ba71200-7e8c-11eb-9c13-fbb1720b0a8c.png)
-This software is made for collecting, searching, and managing websites and local files.
+![head](https://user-images.githubusercontent.com/36077492/110198345-c6c12500-7e8c-11eb-8746-96b3013f4d9a.png)
+* This software is made for collecting, searching, and managing websites and local files.
 ****
 ## Catalogue
 * [Download](#download)
