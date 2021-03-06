@@ -5,7 +5,6 @@ This software is made for collecting, searching, and managing websites and local
 * [Download](#download)
 * [Quick start](#quickstart)
 * Search
-
 ****
 ### [Download](#download)
     *Software: https://github.com/HSDSZ/Idearray/tags
