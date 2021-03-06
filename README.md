@@ -15,6 +15,6 @@ This software is made for collecting, searching, and managing websites and local
  1. Drag a link or file into the searchbar
 ![dragin website](https://user-images.githubusercontent.com/36077492/110198986-29b4bb00-7e91-11eb-96d9-bec95d409a89.gif)
 2. Add/Delete tags
-![addremove](https://user-images.githubusercontent.com/36077492/110198987-2b7e7e80-7e91-11eb-848e-ddf63fc2790e.gif)
+![addremove](https://user-images.githubusercontent.com/36077492/110199067-76989180-7e91-11eb-99eb-85bccddd5b9f.gif)
 ### [Search](#search)
 
