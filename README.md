@@ -8,7 +8,8 @@ This software is made for collecting, searching, and managing websites and local
   * AND
   * OR
   * Combining AND OR
- * [Download youtube video](#quickstart)
+ * [Download/preview video](#downloadvideo)
+****
 ### [Download](#download)
   * Main software: [Idearray](https://github.com/HSDSZ/Idearray/tags)
   * To preview PDF file: [pdfjs](https://mozilla.github.io/pdf.js/getting_started/#download) (unzip it into a folder named "pdfjs")
@@ -21,6 +22,7 @@ This software is made for collecting, searching, and managing websites and local
 ****
 ### [Search](#search)
 ![search](https://user-images.githubusercontent.com/36077492/110199522-b8c2d280-7e93-11eb-8409-7ff2dc793437.gif)
-### [Download or preview youtube/bilibli video](#downloadyoutubevideo)
+****
+### [Download/preview video](#downloadvideo)
 (downloading is based on [you-get](https://github.com/soimort/you-get)
 ![pre](https://user-images.githubusercontent.com/36077492/110199834-55d23b00-7e95-11eb-983c-99c5599e1aa4.png) 
