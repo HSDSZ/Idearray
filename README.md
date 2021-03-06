@@ -1,4 +1,4 @@
-![head](https://user-images.githubusercontent.com/36077492/110198382-0982fd00-7e8d-11eb-9540-d817bd3a76a2.png)
+![head](https://user-images.githubusercontent.com/36077492/110198465-a3e34080-7e8d-11eb-8ace-31a0f6de673e.png)
 ****
 This software is made for collecting, searching, and managing websites and local files.
 * [Download](#download)
