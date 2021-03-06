@@ -1,7 +1,7 @@
 # **Idearray**
-
-
 This software is made for collecting, searching, and managing websites and local files.
+****
+## Catalogue
 
 This software is made from the free version PYQT5. Therefore, it is licensed under GPLv3
 
