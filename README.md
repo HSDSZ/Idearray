@@ -4,6 +4,7 @@ This software is made for collecting, searching, and managing websites and local
 ## Catalogue
 ### Download
 https://github.com/HSDSZ/Idearray/tags
+
 if you want to also preview local pdf file. download  https://mozilla.github.io/pdf.js/getting_started/#download
 
 Currently, it support the preview of txt, pdf, web, and all images.
