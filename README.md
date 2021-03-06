@@ -1,4 +1,4 @@
-# **Idearray**
+![head](https://user-images.githubusercontent.com/36077492/110198295-7ba71200-7e8c-11eb-9c13-fbb1720b0a8c.png)
 This software is made for collecting, searching, and managing websites and local files.
 ****
 ## Catalogue
@@ -15,3 +15,4 @@ This software is made for collecting, searching, and managing websites and local
 ### [Quick start](#quickstart)
  * Drag a link or file into the searchbar
 ### [Search](#search)
+
