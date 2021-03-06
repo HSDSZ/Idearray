@@ -110,7 +110,7 @@ class Mywindow(QMainWindow):
         frame = QWidget()
         frame.setLayout(vlayout)
         self.setCentralWidget(frame)
-        self.setMinimumWidth(picwidth + 80)
+        self.setMinimumWidth(picwidth*2 + 80)
         self.showhidebutton.setStyleSheet(pointleft)
         self.maintab.show()
         self.toolarea.hide()
@@ -246,7 +246,6 @@ class Mywindow(QMainWindow):
             tabpage.gap.setText(fulltext)
             self.maintab.addTab(tabpage, pagetitle)
             self.maintab.setCurrentIndex(self.maintab.count()-1)
-            print(self.startuplook)
             if self.startuplook:
                 imagepage.show()
                 tablepage.hide()
@@ -315,7 +314,6 @@ class Mywindow(QMainWindow):
         # get the birthday, url, urltype, these shared content. set url
         birthday = now()
         urltype = geturltype(dragtext)
-        print(dragtext)
         url = refineurl(dragtext, urltype)
         self.linkline.linkline.setText(url)
         self.piclabel.birthday = birthday
@@ -373,6 +371,7 @@ class Mywindow(QMainWindow):
             bytedata = pixmap2byte(pixmap)
             updatebybirthday(birthday=birthday, pixmap=bytedata)
             self.dbcon.commit()
+
         elif urltype == 'youtube' or urltype == 'bilibili':
             pixmap = youtubilibilithumb(url,urltype, picwidth, picheight)
             self.piclabel.setPixmap(pixmap)
@@ -782,8 +781,6 @@ class HierachyPage(QWidget):
         toremovelist = list(toremoveset)
         toaddset = set(newlist).difference(set(oldlist))
         toaddlist = list(toaddset)
-        print(toremovelist)
-        print(toaddlist)
 
         for parent in toremovelist:
             removeparent(tag,parent)
@@ -971,11 +968,17 @@ class ImageWidget(QLabel):
         self.deletebutton.setFixedSize(25, 25)
         self.deletebutton.setToolTip('delete')
 
+        self.downloadbutton = QPushButton(self)
+        self.downloadbutton.setStyleSheet(downloadstyle)
+        self.downloadbutton.setFixedSize(25,25)
+        self.downloadbutton.setToolTip('download video')
+
         vbx = QVBoxLayout(self)
         vbx.addWidget(self.urlbutton)
         vbx.addWidget(self.likebutton)
         vbx.addWidget(self.laterbutton)
         vbx.addWidget(self.deletebutton)
+        vbx.addWidget(self.downloadbutton)
         self.bar = QWidget(self)
         self.bar.setStyleSheet('background-color: None')
         self.bar.setLayout(vbx)
@@ -988,6 +991,7 @@ class ImageWidget(QLabel):
         self.laterbutton.clicked.connect(self.changelater)
         self.previewbutton.clicked.connect(self.showpreview)
         self.deletebutton.clicked.connect(self.deleterecover)
+        self.downloadbutton.clicked.connect(self.download)
 
     # slot function
     def openurl(self):
@@ -1048,6 +1052,11 @@ class ImageWidget(QLabel):
         if self.parent.tagarea.birthday == self.birthday:
             self.parent.tagarea.showtags(self.birthday)
 
+    def download(self):
+        self.dbpath = QFileDialog.getExistingDirectory(None, 'Select a folder:')
+        # print(self.dbpath)
+        downloadvideo(self.url,self.dbpath)
+
     def showpreview(self):
         self.previewwindow = WebPreview2()
         self.previewwindow.preview(self.url)
@@ -1099,6 +1108,11 @@ class ImageWidget(QLabel):
             self.deletebutton.setStyleSheet(recoverstyle)
         else:
             self.deletebutton.setStyleSheet(todeletestyle)
+
+        if self.urltype == 'youtube' or self.urltype == 'bilibili':
+            self.downloadbutton.show()
+        else:
+            self.downloadbutton.hide()
 
         title = gettitlebybirthday(self.birthday)
         if title != self.title.toPlainText():
@@ -1807,7 +1821,7 @@ class TitleBar(QLabel):
             self.mode = 'view'
             self.mainwindow.showhidebutton.show()
             self.maxbutton.show()
-            self.mainwindow.setMinimumWidth(picwidth + 80)
+            self.mainwindow.setMinimumWidth(picwidth * 2 + 80)
             self.mainwindow.showhidebutton.setStyleSheet(pointleft)
             self.mainwindow.maintab.show()
             self.mainwindow.toolarea.hide()

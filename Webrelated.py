@@ -1,5 +1,5 @@
 ### This file is used to simplify the use of PyQt5 or Pyside ###
-import os
+import os,sys
 from PyQt5.QtGui import QPixmap
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
@@ -8,6 +8,7 @@ from SQLiterelated import expandstr
 import json
 import requests
 import urllib3
+import you_get
 
 def bilithumburl(bvid):
     # url = 'https://api.bilibili.com/x/web-interface/view?aid='+avid
@@ -213,15 +214,14 @@ def tidyup(title=''):
     # if the final str of the title is an empty space, remove it
     return title[:-1] if title[-1] == ' ' else title
 
-
 def now():
     now = str(datetime.now())
     birthday = int(now.split(' ')[0].replace('-','')+now.split(' ')[1].split('.')[0].replace(':',''))
     return birthday
 
+def downloadvideo(url,path='./'):
+    sys.argv = ['you-get','-o',path,url]
+    you_get.main()
+
 if __name__ == '__main__':
-    import fitz
-    url = './T.pdf'
-    document = fitz.open(url)
-    urltitle = geturltitle(url,'pdf',document)
-    print(urltitle)
+    pass
