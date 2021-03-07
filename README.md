@@ -8,7 +8,7 @@ This software is made for collecting, searching, and managing websites and local
   * AND
   * OR
   * Combining AND OR
- * [Download/preview video](#downloadvideo)
+ * [Download/preview video](#quickstart)
 ****
 ### [Download](#download)
   * Main software: [Idearray](https://github.com/HSDSZ/Idearray/tags)
