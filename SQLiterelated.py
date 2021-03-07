@@ -142,7 +142,10 @@ def getpixmapbybirthday(birthday):
     else:
         query.exec('SELECT pixmap FROM deleteddata WHERE birthday = {}'.format(birthday))
         query.next()
-        return query.value(0)
+        if query.value(0) != None:
+            return query.value(0)
+        else:
+            return authorpage
 
 def getcommentbybirthday(birthday):
     query = QSqlQuery()
@@ -159,6 +162,7 @@ def gettagbybirthday(birthday):
     query = QSqlQuery()
     query.exec('SELECT tag FROM alldata WHERE birthday = {}'.format(birthday))
     query.next()
+    # print(query.value(0))
     if query.value(0) != None:
         return query.value(0)
     else:
@@ -249,7 +253,6 @@ def updatebybirthday(birthday, link = '', comment = '3.141592653', tag = '', pix
         query.exec()
 
     elif updatewhat == 11000:
-        print(11000)
         query.prepare("UPDATE {} SET title=?, pixmap=?, modtime=? WHERE birthday=?".format(dbtablename))
         query.addBindValue(title)
         query.addBindValue(QByteArray(pixmap))
@@ -458,7 +461,11 @@ def expandstr(tag):
     return tag
 
 if __name__ == "__main__":
-
-    tag = 'sada'
-    a = operation_getbytag3(tag)
-    print(a)
+    from PyQt5.QtSql import QSqlDatabase, QSqlQuery
+    dbcon = QSqlDatabase.addDatabase("QSQLITE")
+    dbcon.setDatabaseName('./idearray.db')
+    dbcon.open()
+    query = QSqlQuery()
+    query.exec("SELECT tag FROM alldata ORDER BY link")
+    while query.next():
+        print(query.value(0))

@@ -339,6 +339,21 @@ openstyle = '''
              border-style: outset;}
              '''
 
+downloadstyle = ''' 
+             QPushButton
+             {background-image : url(:download.png);
+             border-radius: 5px;
+             border-width: 1px;
+             border-color: gray;
+             border-style: outset;}
+             QPushButton:hover
+             {border-color: white;
+             border-style: outset;}
+             QPushButton:pressed
+             {border-color: gray;
+             border-style: outset;}
+             '''
+
 def previewicon(urltype):
     previewicon = ''' 
                  QPushButton

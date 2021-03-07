@@ -7,7 +7,7 @@ import os
 import fitz
 from PyQt5.QtWidgets import QWidget, QMainWindow, QCompleter, QVBoxLayout, QLineEdit, QTabWidget, QScrollArea,QGridLayout, QLabel, QHBoxLayout, QPushButton, QTextEdit, QTextBrowser, QMenu, QLayout, QFileDialog, QSizePolicy, QSizeGrip,QListWidget,QCheckBox,QTableWidget,QTableWidgetItem,QAbstractItemView
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
-from PyQt5.QtCore import Qt, QStringListModel, pyqtSignal, QRect, QSize, QPoint,QUrl
+from PyQt5.QtCore import Qt, QStringListModel, pyqtSignal, QRect, QSize, QPoint,QUrl,QThread
 from PyQt5.QtGui import QFont, QCursor,QCloseEvent,QImage,QIcon,QIntValidator
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 from images import *
@@ -16,20 +16,20 @@ class Mywindow(QMainWindow):
     def __init__(self):
         super(Mywindow, self).__init__()
         self.setWindowIcon(QIcon(':HSDSZ.ico'))
-        self.dbpath = ''
         self.birthdaylistsum = []
         self.initUI()
-        self.dbcon = QSqlDatabase.addDatabase("QSQLITE")
+        # self.dbcon = QSqlDatabase.addDatabase("QSQLITE")
 
         # import configuration
         startupDBpath, startupwidth, startupheight,self.startuplook = readconfig()
         self.resize(startupwidth,startupheight)
         # connect to database
-        self.dbcon.setDatabaseName(startupDBpath)
+        self.dbpath = startupDBpath
+        self.dbcon = QSqlDatabase.addDatabase("QSQLITE")
+        self.dbcon.setDatabaseName(self.dbpath)
         self.dbcon.open()
         createtable()
         self.dbcon.commit()
-        self.dbpath = startupDBpath
         self.settingwin.page1.le2.setText(startupDBpath)
         self.settingwin.page1.le.setText(startupDBpath)
         self.settingwin.page1.widthle.setText(str(startupwidth))
@@ -175,6 +175,7 @@ class Mywindow(QMainWindow):
                     newtitle = gettitlebybirthday(birthday)
                     widget.title.setText(newtitle)
 
+
     # slot functions
     def chooseDB(self):
         oldpath = self.dbpath
@@ -255,6 +256,8 @@ class Mywindow(QMainWindow):
 
             # fetch the searched result from DB and put them into image and tablepage
             operation = operation_getbytag3(fulltext)
+            operation = "SELECT birthday, title, link, comment, tag, pixmap FROM alldata WHERE (tag LIKE '%youtube%') ORDER BY birthday"
+            print(operation)
 
             query = QSqlQuery()
             query.exec(operation)
@@ -269,7 +272,7 @@ class Mywindow(QMainWindow):
                 urltype = geturltype(url)# the first tag is the type
                 comment = query.value(3)
                 tag = query.value(4)
-                pixmap = query.value(5)
+                pixmap = query.value(5) if query.value(5) != '' else authorpage
                 # create a widget to be added
                 singleimageitem = ImageWidget(self, holder.flayout,birthday,url,urltype)
                 singleimageitem.title.setText(title)
@@ -278,6 +281,7 @@ class Mywindow(QMainWindow):
                 # singleimageitem.birthday = birthday
                 singleimageitem.comment = comment
                 singleimageitem.setPixmap(byte2pixmap(pixmap))
+                # singleimageitem.setPixmap(pixmap)
                 # insert into flayout
                 holder.flayout.addWidget(singleimageitem)
                 # this processevent is used to show image one by one
@@ -320,12 +324,14 @@ class Mywindow(QMainWindow):
         self.tagarea.birthday = birthday
         self.commentarea.birthday = birthday
 
+
         # set title
         if urltype == 'pdf':
             document = fitz.open(url)
             urltitle = geturltitle(url,urltype,document)
         else:
             urltitle = geturltitle(url,urltype)
+        urltitle = geturltitle(url, urltype)
         self.piclabel.title.setText(urltitle)
 
         # set tags and update alltag in the searchbar completer
@@ -371,7 +377,6 @@ class Mywindow(QMainWindow):
             bytedata = pixmap2byte(pixmap)
             updatebybirthday(birthday=birthday, pixmap=bytedata)
             self.dbcon.commit()
-
         elif urltype == 'youtube' or urltype == 'bilibili':
             pixmap = youtubilibilithumb(url,urltype, picwidth, picheight)
             self.piclabel.setPixmap(pixmap)
@@ -1053,9 +1058,12 @@ class ImageWidget(QLabel):
             self.parent.tagarea.showtags(self.birthday)
 
     def download(self):
-        self.dbpath = QFileDialog.getExistingDirectory(None, 'Select a folder:')
-        # print(self.dbpath)
-        downloadvideo(self.url,self.dbpath)
+        self.folderpath = QFileDialog.getExistingDirectory(None, 'Select a folder:', '/')
+
+        if self.folderpath != '':
+            self.work = BkgrndThread(self, url=self.url, path=self.folderpath)
+            self.work.start()
+            # downloadvideo(self.url,self.folderpath)
 
     def showpreview(self):
         self.previewwindow = WebPreview2()
@@ -1436,6 +1444,10 @@ class PixmapArea(QLabel):
         if isinstance(focused_widget, QTextEdit) and self.title.iseditmode:
             updatebybirthday(self.birthday,title= self.title.toPlainText())
             self.mainwindow.triggermodify(self.birthday, 'title')
+
+    def updatepixmap(self,bytedata):
+        updatebybirthday(birthday=self.birthday, pixmap=bytedata)
+
 
 class CommentArea(QTextEdit):
     def __init__(self, parent):
@@ -1950,6 +1962,30 @@ class NoMoveButton(QPushButton):
     def mouseMoveEvent(self, QMouseEvent):
         pass
 
+###################BG THread ####################
+class BkgrndThread(QThread):
+    def __init__(self, parent=None, url='', path=''):
+        super(BkgrndThread, self).__init__(parent)
+        self.url = url
+        self.folderpath = path
+
+    def run(self):
+        downloadvideo(self.url,self.folderpath)
+        self.quit()
+
+class BkgrnTitle(QThread):
+    def __init__(self, parent = None, url='',urltype='youtube',birthday=0):
+        super(BkgrnTitle, self).__init__(parent)
+        self.parent = parent
+        self.url = url
+        self.urltype = urltype
+        self.birthday = birthday
+
+    def run(self):
+        pixmap = youtubilibilithumb(self.url,self.urltype, picwidth, picheight)
+        self.parent.piclabel.setPixmap(pixmap)
+        # insert data into the db base
+        bytedata = pixmap2byte(pixmap)
 
 
 if __name__ == "__main__":
