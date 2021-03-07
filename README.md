@@ -2,7 +2,7 @@
 ****
 This software is made for collecting, searching, and managing websites and local files.
 * [Download](#download)
-* [Quick start](#quickstart)
+* [Quick start](#quickstartw)
 * [Search](#search)
   * Single search
   * AND
@@ -13,7 +13,7 @@ This software is made for collecting, searching, and managing websites and local
 ### [Download](#download)
   * Main software: [Idearray](https://github.com/HSDSZ/Idearray/tags)
 ****
-### [Quick start](#quickstart)
+### [Quick start](#quickstartw)
 1. Drag a link or file into the searchbar
 * ![dragin website](https://user-images.githubusercontent.com/36077492/110199404-2c181480-7e93-11eb-8d29-2c972d54e26f.gif)
 2. Add/Delete tags
