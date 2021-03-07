@@ -1,4 +1,3 @@
-### This file is used to simplify the use of PyQt5 or Pyside ###
 import sys
 from PyQt5.QtWidgets import QApplication,QMenu
 from PyQt5.QtCore import QBuffer,QByteArray,QIODevice

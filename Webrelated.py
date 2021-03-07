@@ -1,14 +1,12 @@
-### This file is used to simplify the use of PyQt5 or Pyside ###
-import os,sys
+import os
 from PyQt5.QtGui import QPixmap
-from urllib.request import urlopen
-from bs4 import BeautifulSoup
 from datetime import datetime
 from SQLiterelated import expandstr
 import json
 import requests
 import urllib3
-import you_get
+# import you_get,sys
+
 
 def bilithumburl(bvid):
     # url = 'https://api.bilibili.com/x/web-interface/view?aid='+avid
@@ -51,7 +49,7 @@ def youtubilibilithumb(url,urltype, width, height):
         return pixmap.scaled(width,height)
 
 def urltopixmap(url):
-    data = urlopen(url).read()
+    data = requests.get(url).content
     # load this data into a QPixmap
     qpixmap = QPixmap()
     qpixmap.loadFromData(data)
@@ -92,9 +90,9 @@ def refineurl(url, urltype):
 def geturltitle(url, urltype, document = None):
     if urltype == 'youtube' or urltype == 'web' or urltype == 'bilibili':
         try:
-            source_code = requests.get(url)
-            soup = BeautifulSoup(source_code.content,'html.parser')
-            rawtitle = soup.title.text
+            fulltext = requests.get(url).text
+            rawtitle = fulltext[fulltext.find('<title>') + 7: fulltext.find('</title>')]
+
         except:
             rawtitle = 'unknown'
         # remove some usless str. bilibli and youtube title has some useless suffix
@@ -220,8 +218,12 @@ def now():
     return birthday
 
 def downloadvideo(url,path='./'):
-    sys.argv = ['you-get','-o',path,url]
-    you_get.main()
+    # sys.argv = ['you-get','-o',path,url]
+    # you_get.main()
+    try:
+        os.system('you-get -o {} {}'.format(path,url))
+    except:
+        pass
 
 if __name__ == '__main__':
     pass

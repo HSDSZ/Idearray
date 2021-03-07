@@ -175,7 +175,6 @@ class Mywindow(QMainWindow):
                     newtitle = gettitlebybirthday(birthday)
                     widget.title.setText(newtitle)
 
-
     # slot functions
     def chooseDB(self):
         oldpath = self.dbpath
@@ -256,9 +255,6 @@ class Mywindow(QMainWindow):
 
             # fetch the searched result from DB and put them into image and tablepage
             operation = operation_getbytag3(fulltext)
-            operation = "SELECT birthday, title, link, comment, tag, pixmap FROM alldata WHERE (tag LIKE '%youtube%') ORDER BY birthday"
-            print(operation)
-
             query = QSqlQuery()
             query.exec(operation)
             birthdaylist = []
@@ -331,7 +327,6 @@ class Mywindow(QMainWindow):
             urltitle = geturltitle(url,urltype,document)
         else:
             urltitle = geturltitle(url,urltype)
-        urltitle = geturltitle(url, urltype)
         self.piclabel.title.setText(urltitle)
 
         # set tags and update alltag in the searchbar completer
