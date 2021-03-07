@@ -8,7 +8,7 @@ This software is made for collecting, searching, and managing websites and local
   * AND
   * OR
   * Combining AND OR
- * [Download/preview video](#quickstart)
+ * [Download/preview video](#down)
 ****
 ### [Download](#download)
   * Main software: [Idearray](https://github.com/HSDSZ/Idearray/tags)
@@ -22,6 +22,6 @@ This software is made for collecting, searching, and managing websites and local
 ### [Search](#search)
 ![search](https://user-images.githubusercontent.com/36077492/110199522-b8c2d280-7e93-11eb-8409-7ff2dc793437.gif)
 ****
-### [Download/preview video](#downloadvideo)
+### [Download/preview video](#down)
 * (downloading is based on [you-get](https://github.com/soimort/you-get)
 * ![pre](https://user-images.githubusercontent.com/36077492/110199834-55d23b00-7e95-11eb-983c-99c5599e1aa4.png) 
