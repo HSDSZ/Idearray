@@ -23,7 +23,7 @@ class CustomLineEdit(QLineEdit):
     def __init__(self, parent=None):
         super(CustomLineEdit, self).__init__(parent)
         self.setFixedHeight(25)
-        self.setPlaceholderText(" Search tags or drag url/file here")
+        self.setPlaceholderText(" Search tags or drag link/file here")
         self.setAcceptDrops(True)
 
         # set the completer. Note the CustomCompleter has built-in QstringModel, so donnot need to input a str list
@@ -38,7 +38,7 @@ class CustomLineEdit(QLineEdit):
     # use the emit in the dropevent to trigger our dropped event
     def dropEvent(self, event):
         dragtext = event.mimeData().text()
-        # hasUrls means drag in a file or url
+        # haslinks means drag in a file or link
         if event.mimeData().hasUrls():
             # emit to trigger the dropped event
             self.dropped.emit(dragtext)

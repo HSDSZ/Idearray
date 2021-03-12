@@ -3,7 +3,7 @@ from stylesheetsum import *
 from SQLiterelated import *
 from constants import *
 from PyQt5.QtWidgets import QApplication,QMenu, QHBoxLayout, QTextEdit, QLayout,QWidget,QLabel,QPushButton,QVBoxLayout, QTabWidget, QTextBrowser, QFileDialog, QSizePolicy,QTableWidget,QAbstractItemView
-from PyQt5.QtCore import Qt,QRect, QSize, QPoint,QUrl,QThread
+from PyQt5.QtCore import Qt,QRect, QSize, QPoint,QThread,QUrl
 from PyQt5.QtGui import QCloseEvent, QCursor, QFont
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 
@@ -115,11 +115,11 @@ class FLayoutHolder(QWidget):
         self.setContentsMargins(10, 10, 0, 0)
 
 class ImageWidget(QLabel):
-    def __init__(self, parent=None, glayout=None, birthday=0, url ='', urltype='unknown'):
+    def __init__(self, parent=None, glayout=None, birthday=0, link ='', linktype='unknown'):
         super(ImageWidget, self).__init__(parent)
         # some variable
-        self.url = url
-        self.urltype = urltype
+        self.link = link
+        self.linktype = linktype
         self.birthday = birthday  # birthday in the database
         self.index = -1  # index in the gridlayout
         self.dbcon = None
@@ -143,17 +143,17 @@ class ImageWidget(QLabel):
         self.title.move(0, picheight)
 
         # preview icon
-        self.previewbutton = PreviewButton(self, self.urltype)
+        self.previewbutton = PreviewButton(self, self.linktype)
         self.previewbutton.setFixedSize(40, 30)
         self.previewbutton.move(int(picwidth / 2)-20, int(picheight / 2)-15)
         self.previewbutton.hide()
         self.previewbutton.setToolTip('Preview')
 
         # some toolbar buttons
-        self.urlbutton = QPushButton(self)
-        self.urlbutton.setStyleSheet(openstyle)
-        self.urlbutton.setFixedSize(25, 25)
-        self.urlbutton.setToolTip('open')
+        self.linkbutton = QPushButton(self)
+        self.linkbutton.setStyleSheet(openstyle)
+        self.linkbutton.setFixedSize(25, 25)
+        self.linkbutton.setToolTip('open')
 
         self.likebutton = QPushButton(self)
         self.likebutton.setFixedSize(25, 25)
@@ -173,7 +173,7 @@ class ImageWidget(QLabel):
         self.downloadbutton.setToolTip('download video')
 
         vbx = QVBoxLayout(self)
-        vbx.addWidget(self.urlbutton)
+        vbx.addWidget(self.linkbutton)
         vbx.addWidget(self.likebutton)
         vbx.addWidget(self.laterbutton)
         vbx.addWidget(self.deletebutton)
@@ -185,7 +185,7 @@ class ImageWidget(QLabel):
 
         # signal
         # self.title.textChanged.connect(self.titleeditted)
-        self.urlbutton.clicked.connect(self.openurl)
+        self.linkbutton.clicked.connect(self.openlink)
         self.likebutton.clicked.connect(self.changelike)
         self.laterbutton.clicked.connect(self.changelater)
         self.previewbutton.clicked.connect(self.showpreview)
@@ -193,12 +193,12 @@ class ImageWidget(QLabel):
         self.downloadbutton.clicked.connect(self.download)
 
     # slot function
-    def openurl(self):
-        urltype = geturltype(self.url)
-        if urltype == 'web' or urltype == 'youtube' or urltype == 'bilibili':
-            os.system("start {}".format(self.url))
+    def openlink(self):
+        linktype = getlinktype(self.link)
+        if linktype == 'web' or linktype == 'youtube' or linktype == 'bilibili':
+            os.system("start {}".format(self.link))
         else:
-            os.startfile(self.url)
+            os.startfile(self.link)
 
     def changelike(self):
         # check if #like tag is in. If in means like it
@@ -255,15 +255,15 @@ class ImageWidget(QLabel):
         self.folderpath = QFileDialog.getExistingDirectory(None, 'Select a folder:', '/')
 
         if self.folderpath != '':
-            self.work = BkgrndThread(self, url=self.url, path=self.folderpath)
+            self.work = BkgrndThread(self, link=self.link, path=self.folderpath)
             self.work.start()
-            # downloadvideo(self.url,self.folderpath)
+            # downloadvideo(self.link,self.folderpath)
 
     def showpreview(self):
         self.previewwindow = WebPreview2()
-        self.previewwindow.preview(self.url)
+        self.previewwindow.preview(self.link)
         self.previewwindow.show()
-        # a popup window to show the preview of the url
+        # a popup window to show the preview of the link
 
     def titleeditted(self):
         focused_widget = QApplication.focusWidget()
@@ -288,7 +288,7 @@ class ImageWidget(QLabel):
             # show the pic in the piclabel
             self.parent.piclabel.showpixandtitle(self.birthday)
             # set the link
-            self.parent.linkline.linkline.setText(self.url)
+            self.parent.linkline.linkline.setText(self.link)
 
     # overwrite function
     def enterEvent(self, *args, **kwargs):
@@ -311,7 +311,7 @@ class ImageWidget(QLabel):
         else:
             self.deletebutton.setStyleSheet(todeletestyle)
 
-        if self.urltype == 'youtube' or self.urltype == 'bilibili':
+        if self.linktype == 'youtube' or self.linktype == 'bilibili':
             self.downloadbutton.show()
         else:
             self.downloadbutton.hide()
@@ -320,7 +320,7 @@ class ImageWidget(QLabel):
         if title != self.title.toPlainText():
             self.title.setText(title)
 
-        if istypeexist(self.urltype):
+        if istypeexist(self.linktype):
             self.previewbutton.show()
 
     def leaveEvent(self, *args, **kwargs):
@@ -328,11 +328,11 @@ class ImageWidget(QLabel):
         self.previewbutton.hide()
 
 class PreviewButton(QPushButton):
-    def __init__(self,parent = None, urltype = 'unknown'):
+    def __init__(self,parent = None, linktype = 'unknown'):
         super(PreviewButton, self).__init__(parent)
         self.parent = parent
         try:
-            self.setStyleSheet(previewicon(urltype))
+            self.setStyleSheet(previewicon(linktype))
         except:
             pass
 
@@ -365,8 +365,8 @@ class WebPreview(QWidget):
     def zoom(self):
         pass
 
-    def preview(self,url):
-        self.webengine.load(QUrl(url))
+    def preview(self,link):
+        self.webengine.load(QUrl(link))
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         self.webengine.close()
@@ -379,12 +379,12 @@ class WebPreview2(QWebEngineView):
         self.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
         self.resize(1000,900)
 
-    def preview(self,url):
-        urltype = geturltype(url)
-        if urltype == 'pdf':
-            self.load(QUrl.fromUserInput('{}?file={}'.format(PDFJS, url)))
+    def preview(self,link):
+        linktype = getlinktype(link)
+        if linktype == 'pdf':
+            self.load(QUrl.fromUserInput('{}?file={}'.format(PDFJS, link)))
         else:
-            self.load(QUrl(url))
+            self.load(QUrl(link))
 
 class Table(QTableWidget):
     def __init__(self, parent = None):
@@ -397,14 +397,15 @@ class Table(QTableWidget):
         self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.setColumnCount(5)
-        self.setHorizontalHeaderLabels(['birthday','title', 'url', 'tag', 'comment'])
+        self.setHorizontalHeaderLabels(['title', 'link', 'tag', 'comment','birthday'])
         self.horizontalHeader().setDefaultAlignment(Qt.AlignLeft)
         self.verticalHeader().setFixedWidth(20)
-        self.setColumnWidth(0, 105)
-        self.setColumnWidth(1, 350)
-        self.setColumnWidth(2, 208)
-        self.setColumnWidth(3, 400)
-        self.setColumnWidth(4, 800)
+
+        self.setColumnWidth(0, 350)
+        self.setColumnWidth(1, 208)
+        self.setColumnWidth(2, 400)
+        self.setColumnWidth(3, 800)
+        self.setColumnWidth(4, 105)
 
         # create a menu
         self.menu = QMenu(self)
@@ -424,7 +425,7 @@ class Table(QTableWidget):
     def updaterightarea(self,currentRow,currentColumn,previousRow, previousColumn):
         if currentRow != previousRow:
             # if we swap row, then we trigger right area
-            birthday = int(self.item(currentRow,0).text())
+            birthday = int(self.item(currentRow,4).text())
             if birthday != self.parent.tagarea.birthday:
                 # show all the tags of this widget
                 self.parent.tagarea.showtags(birthday)
@@ -433,14 +434,14 @@ class Table(QTableWidget):
                 # show the pic annd title in the piclabel
                 self.parent.piclabel.showpixandtitle(birthday)
                 # set the link
-                url = getlinkbybirthday(birthday)
-                self.parent.linkline.linkline.setText(url)
+                link = getlinkbybirthday(birthday)
+                self.parent.linkline.linkline.setText(link)
 
     def changemade(self,row,column):
         if self.loadfinished and self.iseditmode and column != 3:
             # maintab index
             excludeindex = self.parent.maintab.currentIndex()
-            birthday = int(self.item(row,0).text())
+            birthday = int(self.item(row,4).text())
             newtext = self.item(row,column).text()
             if column == 1:
                 #update title
@@ -448,7 +449,7 @@ class Table(QTableWidget):
                 self.parent.piclabel.title.setText(newtext)
                 self.parent.triggermodify(birthday, 'title', extrude = [excludeindex, 'table'])
             elif column == 2:
-                # update url
+                # update link
                 updatebybirthday(birthday,link= newtext)
                 self.parent.linkline.linkline.setText(newtext)
                 self.parent.triggermodify(birthday, 'link', extrude = [excludeindex, 'table'])
@@ -463,10 +464,10 @@ class Table(QTableWidget):
     def generateMenu(self, pos):
         row = self.currentRow()
         if row != -1:
-            birthday = int(self.item(row,0).text())
-            url = self.item(row,2).text()
-            urltype = geturltype(url)
-            self.action5.setEnabled(istypeexist(urltype))
+            birthday = int(self.item(row,4).text())
+            link = self.item(row,1).text()
+            linktype = getlinktype(link)
+            self.action5.setEnabled(istypeexist(linktype))
             orignaltag = gettagbybirthday(birthday)
             isliked = '#like' in orignaltag
             islater = '#later' in orignaltag
@@ -517,14 +518,14 @@ class Table(QTableWidget):
                     self.parent.tagarea.showtags(birthday)
 
             elif self.action == self.action4:
-                if urltype == 'web' or urltype == 'youtube' or urltype == 'bilibili':
-                    os.system("start {}".format(url))
+                if linktype == 'web' or linktype == 'youtube' or linktype == 'bilibili':
+                    os.system("start {}".format(link))
                 else:
-                    os.startfile(url)
+                    os.startfile(link)
 
             elif self.action == self.action5:
                 self.previewwindow = WebPreview2()
-                self.previewwindow.preview(url)
+                self.previewwindow.preview(link)
                 self.previewwindow.show()
 
     def enterEvent(self, *args, **kwargs):
@@ -596,11 +597,11 @@ class MainTab(QTabWidget):
 
 
 class BkgrndThread(QThread):
-    def __init__(self, parent=None, url='', path=''):
+    def __init__(self, parent=None, link='', path=''):
         super(BkgrndThread, self).__init__(parent)
-        self.url = url
+        self.link = link
         self.folderpath = path
 
     def run(self):
-        downloadvideo(self.url,self.folderpath)
+        downloadvideo(self.link,self.folderpath)
         self.quit()

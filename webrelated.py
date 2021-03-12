@@ -6,15 +6,15 @@ import json
 import requests
 # from you_get import common
 
-def bilithumburl(bvid):
-    # url = 'https://api.bilibili.com/x/web-interface/view?aid='+avid
-    url = 'https://api.bilibili.com/x/web-interface/view?bvid={}'.format(bvid)
+def bilithumblink(bvid):
+    # link = 'https://api.bilibili.com/x/web-interface/view?aid='+avid
+    link = 'https://api.bilibili.com/x/web-interface/view?bvid={}'.format(bvid)
 
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36',
                 'Referer': 'https://www.bilibili.com'}
 
-    # urllib3.disable_warnings()
-    response = requests.get(url, headers=headers, verify=False)
+    # linklib3.disable_warnings()
+    response = requests.get(link, headers=headers, verify=False)
     content = json.loads(response.text)
 
     statue_code = content.get('code')
@@ -24,30 +24,30 @@ def bilithumburl(bvid):
         return ''
 
 # this function return a Qpixmap of video web which has thumbnail
-def youtubilibilithumb(url,urltype, width, height):
-    if urltype == 'youtube':
+def youtubilibilithumb(link,linktype, width, height):
+    if linktype == 'youtube':
         # get youtube thumbnail
-        id = url.split('=')[1].split('&')[0]
-        thumbnail_url = "http://img.youtube.com/vi/{}/0.jpg".format(id)
-        loadedpix = urltopixmap(thumbnail_url)
+        id = link.split('=')[1].split('&')[0]
+        thumbnail_link = "http://img.youtube.com/vi/{}/0.jpg".format(id)
+        loadedpix = linktopixmap(thumbnail_link)
         return resizepixmap(loadedpix, width, height)
 
-    elif urltype == 'bilibili':
+    elif linktype == 'bilibili':
         # get bilibili thumbnail
-        bvid = url.split('video/')[1].split('?')[0]
+        bvid = link.split('video/')[1].split('?')[0]
         # v = video.get_video_info(bvid=bvid)
         # get the image
-        # thumbnail_url = v.get('pic')
-        thumbnail_url = bilithumburl(bvid)
-        loadedpix = urltopixmap(thumbnail_url)
+        # thumbnail_link = v.get('pic')
+        thumbnail_link = bilithumblink(bvid)
+        loadedpix = linktopixmap(thumbnail_link)
         return resizepixmap(loadedpix, width, height)
 
     else:
         pixmap = QPixmap('./pics/unknownthumb.png')
         return pixmap.scaled(width,height)
 
-def urltopixmap(url):
-    data = requests.get(url).content
+def linktopixmap(link):
+    data = requests.get(link).content
     # load this data into a QPixmap
     qpixmap = QPixmap()
     qpixmap.loadFromData(data)
@@ -71,24 +71,24 @@ def resizepixmap(qpixmap,width, height, area = 'middle'):
     qpixmap = qpixmap.scaled(width, height)
     return qpixmap
 
-def refineurl(url, urltype):
-    if (urltype == 'web') or (urltype == 'youtube') or (urltype == 'bilibili'):
-        if 'http' not in url:
-            newurl = 'http://www.' + url
-            return newurl
+def refinelink(link, linktype):
+    if (linktype == 'web') or (linktype == 'youtube') or (linktype == 'bilibili'):
+        if 'http' not in link:
+            newlink = 'http://www.' + link
+            return newlink
         else:
-            return url
-    elif urltype == 'unknown':
-        newurl = url
-        return newurl
+            return link
+    elif linktype == 'unknown':
+        newlink = link
+        return newlink
     else:
-        newurl = url.split('file:///')[1]
-        return newurl
+        newlink = link.split('file:///')[1]
+        return newlink
 
-def geturltitle(url, urltype, document = None):
-    if urltype == 'youtube' or urltype == 'web' or urltype == 'bilibili':
+def getlinktitle(link, linktype, document = None):
+    if linktype == 'youtube' or linktype == 'web' or linktype == 'bilibili':
         try:
-            fulltext = requests.get(url).text
+            fulltext = requests.get(link).text
             rawtitle = fulltext[fulltext.find('<title>') + 7: fulltext.find('</title>')]
 
         except:
@@ -99,31 +99,31 @@ def geturltitle(url, urltype, document = None):
         title = title.replace('â€“',' ')
         return title
 
-    elif urltype == 'pdf':
+    elif linktype == 'pdf':
         try:
             toc = document.get_toc()
             rawtitle = document.get_toc()[0][1]
             newtitle = rawtitle.replace('', ' ')
             if newtitle == 'Title':
-                return os.path.basename(url).split('.')[0]
+                return os.path.basename(link).split('.')[0]
             else:
                 return newtitle
         except:
-            newtitle = os.path.basename(url).split('.')[0]
+            newtitle = os.path.basename(link).split('.')[0]
         return newtitle
 
-    elif urltype == 'unknown':
+    elif linktype == 'unknown':
         return 'unknown'
 
     else:
-        title = os.path.basename(url).split('.')[0]
+        title = os.path.basename(link).split('.')[0]
         return title
 
-def titletotags(urltype, rawtitle):
+def titletotags(linktype, rawtitle):
     # tidy up this title
     tidytitle = tidyup(rawtitle)
-    # put the urltype at the begining of the tags
-    tagstr = '{} {}'.format(urltype, tidytitle)
+    # put the linktype at the begining of the tags
+    tagstr = '{} {}'.format(linktype, tidytitle)
     # expand the tags
     tagstr = expandstr(tagstr)
     # remove repeated str
@@ -133,15 +133,15 @@ def titletotags(urltype, rawtitle):
     taglist = tagstr.split()
     return tagstr, taglist
 
-def geturltype(url):
-    if 'youtube.com/watch' in url:
+def getlinktype(link):
+    if 'youtube.com/watch' in link:
         return 'youtube'
-    elif 'bilibili.com/video' in url:
+    elif 'bilibili.com/video' in link:
         return 'bilibili'
-    elif 'http' in url:
+    elif 'http' in link:
         return 'web'
-    elif ':' in url:
-        extension = url.split('.')[-1]
+    elif ':' in link:
+        extension = link.split('.')[-1]
         if extension == 'jpg' or extension == 'png' or extension == 'jpeg':
             return 'image'
         else:
@@ -149,18 +149,18 @@ def geturltype(url):
     else:
         return 'unknown'
 
-def istypeexist(urltype):
-    if urltype == 'youtube':
+def istypeexist(linktype):
+    if linktype == 'youtube':
         return True
-    elif urltype == 'bilibili':
+    elif linktype == 'bilibili':
         return True
-    elif urltype == 'web':
+    elif linktype == 'web':
         return True
-    elif urltype == 'pdf':
+    elif linktype == 'pdf':
         return True
-    elif urltype == 'image':
+    elif linktype == 'image':
         return True
-    elif urltype == 'txt':
+    elif linktype == 'txt':
         return True
     else:
         return False
@@ -215,9 +215,9 @@ def now():
     birthday = int(now.split(' ')[0].replace('-','')+now.split(' ')[1].split('.')[0].replace(':',''))
     return birthday
 
-def downloadvideo(url,path='./'):
+def downloadvideo(link,path='./'):
     try:
-        # common.any_download(url=url,output_dir=path,merge=True)
-        os.system('you-get -o {} {}'.format(path, url))
+        # common.any_download(link=link,output_dir=path,merge=True)
+        os.system('you-get -o {} {}'.format(path, link))
     except:
         pass

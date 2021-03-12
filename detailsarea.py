@@ -200,26 +200,26 @@ class RemovableButton(QWidget):
         self.closebutton = QPushButton(self)
         self.closebutton.setFixedSize(15, 15)
         self.closebutton.setStyleSheet(removebuton)
-        self.urlbutton = QPushButton(self)
+        self.linkbutton = QPushButton(self)
         # remove background and make the word blue and underline
-        self.urlbutton.setStyleSheet('''
+        self.linkbutton.setStyleSheet('''
         QPushButton{background-color: rgba(0, 0, 0, 0); color: blue; text-decoration: none; text-align: left; }
         QPushButton:hover{text-decoration: underline;}
         QPushButton:pressed{text-decoration: none;}''')
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.closebutton)
-        hlayout.addWidget(self.urlbutton)
+        hlayout.addWidget(self.linkbutton)
         hlayout.setSpacing(0)
         hlayout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(hlayout)
 
         # signals
-        self.urlbutton.clicked.connect(lambda: self.parent.newtab(self.urlbutton.text()))
-        self.closebutton.clicked.connect(lambda: self.parent.removetag(self.urlbutton.text()))
+        self.linkbutton.clicked.connect(lambda: self.parent.newtab(self.linkbutton.text()))
+        self.closebutton.clicked.connect(lambda: self.parent.removetag(self.linkbutton.text()))
 
     def setText(self, text):
-        self.urlbutton.setText(text)
+        self.linkbutton.setText(text)
         # hide close button in certain situation
         if text == '#deleted' or text == '#like' or text == '#later':
             self.closebutton.hide()

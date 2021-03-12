@@ -151,16 +151,16 @@ class Mywindow(QMainWindow):
                     # update tables
                     if source == 'title':
                         newtitle = gettitlebybirthday(birthday)
-                        tablepage.item(index,1).setText(newtitle)
+                        tablepage.item(index,0).setText(newtitle)
                     elif source == 'link':
                         newlink = getlinkbybirthday(birthday)
-                        tablepage.item(index,2).setText(newlink)
+                        tablepage.item(index,1).setText(newlink)
                     elif source == 'comment':
                         newcomment = getcommentbybirthday(birthday)
-                        tablepage.item(index,4).setText(newcomment)
+                        tablepage.item(index,3).setText(newcomment)
                     elif source == 'tag':
                         newtag = gettagbybirthday(birthday)
-                        tablepage.item(index,3).setText(newtag)
+                        tablepage.item(index,2).setText(newtag)
 
                 # update images
                 if source == 'title':
@@ -256,17 +256,17 @@ class Mywindow(QMainWindow):
             birthdaylist = []
             i = 0
             while query.next():
-                # get the birthday, title, url, comment, tag
+                # get the birthday, title, link, comment, tag
                 birthday = query.value(0)
                 birthdaylist.append(birthday)
                 title = query.value(1)
-                url = query.value(2)
-                urltype = geturltype(url)# the first tag is the type
+                link = query.value(2)
+                linktype = getlinktype(link)# the first tag is the type
                 comment = query.value(3)
                 tag = query.value(4)
                 pixmap = query.value(5) if query.value(5) != '' else authorpage
                 # create a widget to be added
-                singleimageitem = ImageWidget(self, holder.flayout,birthday,url,urltype)
+                singleimageitem = ImageWidget(self, holder.flayout,birthday,link,linktype)
                 singleimageitem.title.setText(title)
                 singleimageitem.index = i
                 singleimageitem.dbcon = self.dbcon
@@ -282,17 +282,17 @@ class Mywindow(QMainWindow):
                 singletableitem = QTableWidgetItem(str(birthday))
                 singletableitem.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
                 singletableitem.setTextAlignment(Qt.AlignRight)
-                tablepage.setItem(i, 0, singletableitem)
+                tablepage.setItem(i, 4, singletableitem)
                 singletableitem = QTableWidgetItem(title)
-                tablepage.setItem(i, 1, singletableitem)
-                singletableitem = QTableWidgetItem(url)
+                tablepage.setItem(i, 0, singletableitem)
+                singletableitem = QTableWidgetItem(link)
                 singletableitem.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
-                tablepage.setItem(i, 2, singletableitem)
+                tablepage.setItem(i, 1, singletableitem)
                 singletableitem = QTableWidgetItem(tag)
                 singletableitem.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
-                tablepage.setItem(i, 3, singletableitem)
+                tablepage.setItem(i, 2, singletableitem)
                 singletableitem = QTableWidgetItem(comment)
-                tablepage.setItem(i, 4, singletableitem)
+                tablepage.setItem(i, 3, singletableitem)
 
                 QApplication.processEvents()
                 i += 1
@@ -308,26 +308,26 @@ class Mywindow(QMainWindow):
         else:
             self.titlebar.swithcmodeto(currentmode.replace('view', 'both'))
 
-        # get the birthday, url, urltype, these shared content. set url
+        # get the birthday, link, linktype, these shared content. set link
         birthday = now()
-        urltype = geturltype(dragtext)
-        url = refineurl(dragtext, urltype)
-        self.linkline.linkline.setText(url)
+        linktype = getlinktype(dragtext)
+        link = refinelink(dragtext, linktype)
+        self.linkline.linkline.setText(link)
         self.piclabel.birthday = birthday
         self.tagarea.birthday = birthday
         self.commentarea.birthday = birthday
 
 
         # set title
-        if urltype == 'pdf':
-            document = fitz.open(url)
-            urltitle = geturltitle(url,urltype,document)
+        if linktype == 'pdf':
+            document = fitz.open(link)
+            linktitle = getlinktitle(link,linktype,document)
         else:
-            urltitle = geturltitle(url,urltype)
-        self.piclabel.title.setText(urltitle)
+            linktitle = getlinktitle(link,linktype)
+        self.piclabel.title.setText(linktitle)
 
         # set tags and update alltag in the searchbar completer
-        tagstr, taglist = titletotags(urltype, urltitle)
+        tagstr, taglist = titletotags(linktype, linktitle)
         self.tagarea.showtagsbylist(taglist)
         for item in taglist:
             if item not in self.titlebar.searchbar.completer.alltags:
@@ -337,18 +337,18 @@ class Mywindow(QMainWindow):
         self.commentarea.setText('')
         # process them and add them into database
         QApplication.processEvents()
-        adddatawithoutpix(birthday, urltitle, url, '', tagstr)
+        adddatawithoutpix(birthday, linktitle, link, '', tagstr)
         self.dbcon.commit()
 
         # set pixmap to qlabel and save this new pixmap to database
-        if urltype == 'web':
+        if linktype == 'web':
             self.piclabel.setPixmap(QPixmap(':loading.png'))
             self.tempengine = Webengine(self.dbcon,self.piclabel)
             self.tempengine.setZoomFactor(0.3)
             self.tempengine.show()
             self.tempengine.birthday = birthday
-            self.tempengine.load(QUrl(url))
-        elif urltype == 'pdf':
+            self.tempengine.load(QUrl(link))
+        elif linktype == 'pdf':
             # screenshot the first page
             page1 = document[0] # first page
             pix = page1.getPixmap(alpha = False)
@@ -359,18 +359,18 @@ class Mywindow(QMainWindow):
             bytedata = pixmap2byte(qpixmap)
             # save into db
             self.piclabel.setPixmap(qpixmap)
-            updatebybirthday(birthday=birthday, title=urltitle, pixmap=bytedata)
+            updatebybirthday(birthday=birthday, title=linktitle, pixmap=bytedata)
             self.dbcon.commit()
-        elif urltype == 'image':
-            pixmap = QPixmap(url)
+        elif linktype == 'image':
+            pixmap = QPixmap(link)
             pixmap = resizepixmap(pixmap,picwidth,picheight)
             self.piclabel.setPixmap(pixmap)
             # insert data into the db base
             bytedata = pixmap2byte(pixmap)
             updatebybirthday(birthday=birthday, pixmap=bytedata)
             self.dbcon.commit()
-        elif urltype == 'youtube' or urltype == 'bilibili':
-            pixmap = youtubilibilithumb(url,urltype, picwidth, picheight)
+        elif linktype == 'youtube' or linktype == 'bilibili':
+            pixmap = youtubilibilithumb(link,linktype, picwidth, picheight)
             self.piclabel.setPixmap(pixmap)
             # insert data into the db base
             bytedata = pixmap2byte(pixmap)
