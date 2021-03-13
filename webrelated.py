@@ -4,14 +4,14 @@ from datetime import datetime
 from SQLiterelated import expandstr
 import json
 import requests
-# from you_get import common
-
-def bilithumblink(bvid):
+from constants import *
+from you_get import common
+def bili_thumb_link(bvid):
     # link = 'https://api.bilibili.com/x/web-interface/view?aid='+avid
     link = 'https://api.bilibili.com/x/web-interface/view?bvid={}'.format(bvid)
 
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36',
-                'Referer': 'https://www.bilibili.com'}
+    # headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36',
+    #             'Referer': 'https://www.bilibili.com'}
 
     # linklib3.disable_warnings()
     response = requests.get(link, headers=headers, verify=False)
@@ -23,31 +23,87 @@ def bilithumblink(bvid):
     else:
         return ''
 
+def qqv_thumb_link_old(link):
+    if 'page' in link:
+        vid = link.split('page/')[1].split('.html')[0]
+        thumblink = 'http://puui.qpic.cn/qqvideo_ori/0/{}_360_204/0'.format(vid)
+        return thumblink
+    elif 'cover' in link:
+        # individual video
+        link_tail = link.split('cover/')[1]
+        if '/' in link_tail:
+            vid = link_tail.split('/')[1].split('.html')[0]
+        else:
+            fulltext = requests.get(link,headers=headers).text
+            vid = fulltext.split('var LIST_INFO = {"vid":["')[1].split('"')[0]
+        thumblink = 'http://puui.qpic.cn/qqvideo_ori/0/{}_360_204/0'.format(vid)
+        return thumblink
+    else:
+        return ''
+
+def qqv_thumb_link(link):
+    if 'page' in link:
+        vid = link.split('page/')[1].split('.html')[0]
+        thumblink = 'https://vpic.video.qq.com/15746141/{}.png'.format(vid)
+        return thumblink
+    elif 'cover' in link:
+        # individual video
+        link_tail = link.split('cover/')[1]
+        if '/' in link_tail:
+            vid = link_tail.split('/')[1].split('.html')[0]
+        else:
+            fulltext = requests.get(link,headers=headers).text
+            vid = fulltext.split('var LIST_INFO = {"vid":["')[1].split('"')[0]
+        thumblink = 'https://vpic.video.qq.com/15746141/{}.png'.format(vid)
+        return thumblink
+    else:
+        return ''
+
+def iqiyi_thumb_link(link):
+    # first the the vid
+    fulltext = requests.get(link,headers=headers).text
+    tvid = fulltext.split('tvid=')[1].split('&aid')[0]
+
+    # get image from api
+    api_link = 'http://pcw-api.iqiyi.com/video/video/playervideoinfo?tvid={}'.format(tvid)
+    fulltext = requests.get(api_link,headers=headers).text
+    content = json.loads(fulltext)
+    return content.get('data').get('vpic')
+
+
 # this function return a Qpixmap of video web which has thumbnail
-def youtubilibilithumb(link,linktype, width, height):
+def videothumb(link,linktype, width, height):
     if linktype == 'youtube':
         # get youtube thumbnail
         id = link.split('=')[1].split('&')[0]
         thumbnail_link = "http://img.youtube.com/vi/{}/0.jpg".format(id)
-        loadedpix = linktopixmap(thumbnail_link)
-        return resizepixmap(loadedpix, width, height)
+        rawpixmap = linktopixmap(thumbnail_link)
+        return resizepixmap(rawpixmap, width, height)
 
     elif linktype == 'bilibili':
         # get bilibili thumbnail
         bvid = link.split('video/')[1].split('?')[0]
-        # v = video.get_video_info(bvid=bvid)
-        # get the image
-        # thumbnail_link = v.get('pic')
-        thumbnail_link = bilithumblink(bvid)
-        loadedpix = linktopixmap(thumbnail_link)
-        return resizepixmap(loadedpix, width, height)
+        thumbnail_link = bili_thumb_link(bvid)
+        rawpixmap = linktopixmap(thumbnail_link)
+        return resizepixmap(rawpixmap, width, height)
+
+    elif linktype == 'iqiyi':
+        thumbnail_link = iqiyi_thumb_link(link)
+        rawpixmap = linktopixmap(thumbnail_link)
+        return resizepixmap(rawpixmap, width, height)
+
+    elif linktype == 'tencent':
+        thumbnail_link = qqv_thumb_link(link)
+        rawpixmap = linktopixmap(thumbnail_link)
+        return resizepixmap(rawpixmap, width, height)
 
     else:
         pixmap = QPixmap('./pics/unknownthumb.png')
         return pixmap.scaled(width,height)
 
+
 def linktopixmap(link):
-    data = requests.get(link).content
+    data = requests.get(link,headers=headers).content
     # load this data into a QPixmap
     qpixmap = QPixmap()
     qpixmap.loadFromData(data)
@@ -72,7 +128,7 @@ def resizepixmap(qpixmap,width, height, area = 'middle'):
     return qpixmap
 
 def refinelink(link, linktype):
-    if (linktype == 'web') or (linktype == 'youtube') or (linktype == 'bilibili'):
+    if (linktype == 'web') or (linktype == 'youtube') or (linktype == 'bilibili') or (linktype == 'tencent') or (linktype == 'iqiyi'):
         if 'http' not in link:
             newlink = 'http://www.' + link
             return newlink
@@ -86,17 +142,25 @@ def refinelink(link, linktype):
         return newlink
 
 def getlinktitle(link, linktype, document = None):
-    if linktype == 'youtube' or linktype == 'web' or linktype == 'bilibili':
+    if linktype == 'youtube' or linktype == 'web' or linktype == 'tencent' or linktype == 'iqiyi':
         try:
-            fulltext = requests.get(link).text
-            rawtitle = fulltext[fulltext.find('<title>') + 7: fulltext.find('</title>')]
-
+            r = requests.get(link,headers=headers)
+            r.encoding = 'utf-8'
+            fulltext = r.text
+            rawtitle = fulltext.split('<title>')[1].split('</title>')[0]
         except:
             rawtitle = 'unknown'
-        # remove some usless str. bilibli and youtube title has some useless suffix
-        title = rawtitle.split('_哔哩哔哩 (')[0].split(' - YouTube')[0]
-
+        # remove some usless str. youtube title has some useless suffix
+        title = rawtitle.split(' - YouTube')[0]
         title = title.replace('â€“',' ')
+        return title
+    
+    elif linktype == 'bilibili':
+        try:
+            fulltext = requests.get(link,headers=headers).text
+            title = fulltext.split('<title data-vue-meta="true">')[1].split('_哔哩哔哩 (')[0]
+        except:
+            title = 'unknown'
         return title
 
     elif linktype == 'pdf':
@@ -138,6 +202,10 @@ def getlinktype(link):
         return 'youtube'
     elif 'bilibili.com/video' in link:
         return 'bilibili'
+    elif 'v.qq.com' in link:
+        return 'tencent'
+    elif 'iqiyi.com/v' in link:
+        return 'iqiyi'
     elif 'http' in link:
         return 'web'
     elif ':' in link:
@@ -161,6 +229,16 @@ def istypeexist(linktype):
     elif linktype == 'image':
         return True
     elif linktype == 'txt':
+        return True
+    elif linktype == 'tencent':
+        return True    
+    elif linktype == 'iqiyi':
+        return True
+    else:
+        return False
+
+def istypeolvid(linktype):
+    if linktype == 'youtube' or linktype == 'bilibili' or linktype == 'tencent' or linktype == 'iqiyi':
         return True
     else:
         return False
@@ -216,8 +294,9 @@ def now():
     return birthday
 
 def downloadvideo(link,path='./'):
-    try:
-        # common.any_download(link=link,output_dir=path,merge=True)
-        os.system('you-get -o {} {}'.format(path, link))
-    except:
-        pass
+    # try:
+    #     common.any_download(link=link,output_dir=path,merge=True)
+    #     # os.system('you-get -o {} {}'.format(path, link))
+    # except:
+    #     pass
+    common.any_download(url=link,output_dir=path,merge=True)
