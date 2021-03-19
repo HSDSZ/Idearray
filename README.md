@@ -9,3 +9,7 @@
 ### Extra functionalities
 1. Download online videos from youtube bilibili tencent ... with one click.
 2. Manage research articles. Simply drag the link of the online paper in, you can access its pdf without the need of downloading it
+
+
+### Manual
+https://github.com/HSDSZ/Idearray/blob/main/How%20to%20use/manual.md
