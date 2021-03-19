@@ -2,7 +2,7 @@
 simply drag the paper link or local file in
 * ![save data](https://user-images.githubusercontent.com/36077492/111809584-17666280-8910-11eb-8fc7-ac676bdac0fd.gif)
 ### 2. Fully-featured search operation
-A B: return you data whoes tags contains both A and B
+A B: return you data whoes tags contains both A and B\
 A B or C D: return your data tags contains (A and B) or contains (C and D)
 * ![search data](https://user-images.githubusercontent.com/36077492/111809820-572d4a00-8910-11eb-9abb-b9a9927c2ed0.gif)
 ### 3. Switching between table viewport or image viewport
