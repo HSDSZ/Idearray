@@ -1,5 +1,5 @@
 ### 1. A quick way to save your loved websites or local files
-simply drag the paper link or local file in\
+simply drag the website or local file in\
 ![save data](https://user-images.githubusercontent.com/36077492/111809584-17666280-8910-11eb-8fc7-ac676bdac0fd.gif)
 ### 2. Fully-featured search operation
 A B: return you data whoes tags contains both A and B\
