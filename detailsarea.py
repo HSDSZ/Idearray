@@ -33,11 +33,26 @@ class PixmapArea(QLabel):
         self.title.setFont(QFont('Arial', 10))
         self.title.setFixedSize(picwidth, 40)
         self.title.move(0, 20)
+
+        self.closebutton = QPushButton(self)
+        self.closebutton.setFixedSize(15, 20)
+        self.closebutton.setStyleSheet(removebuton)
+
         self.setFixedSize(picwidth, picheight + 60)
 
         self.title.textChanged.connect(self.titleeditted)
+        self.closebutton.clicked.connect(self.closedetailarea)
 
-    def showpixandtitle(self,birthday):
+    def closedetailarea(self):
+        if self.mainwindow.titlebar.mode == 'normal' or self.mainwindow.titlebar.mode == 'max':
+            self.mainwindow.toolarea.hide()
+        elif self.mainwindow.titlebar.mode == 'detail':
+            self.mainwindow.titlebar.swithcmodeto('bar')
+            self.mainwindow.toolarea.hide()
+        else:
+            pass
+
+    def showpixandtitle(self, birthday):
         self.birthday = birthday
         pix = getpixmapbybirthday(birthday)
         self.setPixmap(byte2pixmap(pix))
@@ -50,7 +65,7 @@ class PixmapArea(QLabel):
             updatebybirthday(self.birthday,title= self.title.toPlainText())
             self.mainwindow.triggermodify(self.birthday, 'title')
 
-    def updatepixmap(self,bytedata):
+    def updatepixmap(self, bytedata):
         updatebybirthday(birthday=self.birthday, pixmap=bytedata)
 
 
@@ -163,7 +178,9 @@ class TagArea(QScrollArea):
         newinputlist = newinputstr.split()
         for tag in newinputlist:
             expandlist = expandstr(tag).split()[1:]
-            newinputlist += expandlist
+            for item in expandlist:
+                if item not in newinputlist:
+                    newinputlist.append(item)
             if tag not in taglist:
                 tagstr += ' {}'.format(tag)
         updatebybirthday(self.birthday, tag=tagstr)
@@ -196,7 +213,6 @@ class RemovableButton(QWidget):
     def __init__(self, parent=None):
         super(RemovableButton, self).__init__(parent)
         self.parent = parent
-
         self.closebutton = QPushButton(self)
         self.closebutton.setFixedSize(15, 15)
         self.closebutton.setStyleSheet(removebuton)

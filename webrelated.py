@@ -5,7 +5,8 @@ from SQLiterelated import expandstr
 import json
 import requests
 from constants import *
-from you_get import common
+# from you_get import common
+
 def bili_thumb_link(bvid):
     # link = 'https://api.bilibili.com/x/web-interface/view?aid='+avid
     link = 'https://api.bilibili.com/x/web-interface/view?bvid={}'.format(bvid)
@@ -70,7 +71,6 @@ def iqiyi_thumb_link(link):
     content = json.loads(fulltext)
     return content.get('data').get('vpic')
 
-
 # this function return a Qpixmap of video web which has thumbnail
 def videothumb(link,linktype, width, height):
     if linktype == 'youtube':
@@ -82,7 +82,7 @@ def videothumb(link,linktype, width, height):
 
     elif linktype == 'bilibili':
         # get bilibili thumbnail
-        bvid = link.split('video/')[1].split('?')[0]
+        bvid = link.split('video/')[1].split('?')[0].split('/')[0]
         thumbnail_link = bili_thumb_link(bvid)
         rawpixmap = linktopixmap(thumbnail_link)
         return resizepixmap(rawpixmap, width, height)
@@ -100,7 +100,6 @@ def videothumb(link,linktype, width, height):
     else:
         pixmap = QPixmap('./pics/unknownthumb.png')
         return pixmap.scaled(width,height)
-
 
 def linktopixmap(link):
     data = requests.get(link,headers=headers).content
@@ -128,12 +127,16 @@ def resizepixmap(qpixmap,width, height, area = 'middle'):
     return qpixmap
 
 def refinelink(link, linktype):
-    if (linktype == 'web') or (linktype == 'youtube') or (linktype == 'bilibili') or (linktype == 'tencent') or (linktype == 'iqiyi'):
+    if istypeweb(linktype):
         if 'http' not in link:
-            newlink = 'http://www.' + link
-            return newlink
+            try:
+                fulltext = requests.get('http://{}'.format(link),headers=headers)
+                return 'http://{}'.format(link)
+            except:
+                return 'https://{}'.format(link)
         else:
             return link
+
     elif linktype == 'unknown':
         newlink = link
         return newlink
@@ -142,25 +145,28 @@ def refinelink(link, linktype):
         return newlink
 
 def getlinktitle(link, linktype, document = None):
-    if linktype == 'youtube' or linktype == 'web' or linktype == 'tencent' or linktype == 'iqiyi':
-        try:
-            r = requests.get(link,headers=headers)
-            r.encoding = 'utf-8'
-            fulltext = r.text
-            rawtitle = fulltext.split('<title>')[1].split('</title>')[0]
-        except:
-            rawtitle = 'unknown'
-        # remove some usless str. youtube title has some useless suffix
-        title = rawtitle.split(' - YouTube')[0]
-        title = title.replace('â€“',' ')
-        return title
-    
-    elif linktype == 'bilibili':
+
+    if linktype == 'bilibili':
         try:
             fulltext = requests.get(link,headers=headers).text
             title = fulltext.split('<title data-vue-meta="true">')[1].split('_哔哩哔哩 (')[0]
         except:
             title = 'unknown'
+        return title
+
+    elif istypeweb(linktype):
+        try:
+            r = requests.get(link, headers=headers, timeout=1)
+            r.encoding = 'utf-8'
+            fulltext = r.text
+            rawtitle = fulltext.split('<title>')[1].split('</title>')[0]
+            if rawtitle == '\n' or rawtitle == '':
+                rawtitle = fulltext.split('title" content="')[1].split('"')[0]
+        except:
+            rawtitle = 'unknown'
+            # remove some usless str. youtube title has some useless suffix
+        title = rawtitle.split(' - YouTube')[0]
+        title = title.replace('â€“', ' ')
         return title
 
     elif linktype == 'pdf':
@@ -199,23 +205,25 @@ def titletotags(linktype, rawtitle):
 
 def getlinktype(link):
     if 'youtube.com/watch' in link:
-        return 'youtube'
+        return 'youtube','',''
     elif 'bilibili.com/video' in link:
-        return 'bilibili'
+        return 'bilibili','',''
     elif 'v.qq.com' in link:
-        return 'tencent'
+        return 'tencent','',''
     elif 'iqiyi.com/v' in link:
-        return 'iqiyi'
+        return 'iqiyi','',''
     elif 'http' in link:
-        return 'web'
+        return linktodoipdf(link)
+    elif 'www.' in link or '.com' in link:
+        return 'web', '', ''
     elif ':' in link:
         extension = link.split('.')[-1]
         if extension == 'jpg' or extension == 'png' or extension == 'jpeg':
-            return 'image'
+            return 'image','',''
         else:
-            return extension
+            return extension,'',''
     else:
-        return 'unknown'
+        return 'unknown','',''
 
 def istypeexist(linktype):
     if linktype == 'youtube':
@@ -234,11 +242,19 @@ def istypeexist(linktype):
         return True    
     elif linktype == 'iqiyi':
         return True
+    elif linktype == 'paper':
+        return True
     else:
         return False
 
 def istypeolvid(linktype):
     if linktype == 'youtube' or linktype == 'bilibili' or linktype == 'tencent' or linktype == 'iqiyi':
+        return True
+    else:
+        return False
+
+def istypeweb(linktype):
+    if linktype == 'web' or linktype == 'youtube' or linktype == 'bilibili' or linktype == 'tencent' or linktype == 'iqiyi' or linktype == 'paper':
         return True
     else:
         return False
@@ -294,9 +310,31 @@ def now():
     return birthday
 
 def downloadvideo(link,path='./'):
-    # try:
-    #     common.any_download(link=link,output_dir=path,merge=True)
-    #     # os.system('you-get -o {} {}'.format(path, link))
-    # except:
-    #     pass
-    common.any_download(url=link,output_dir=path,merge=True)
+    try:
+        # common.any_download(link=link,output_dir=path,merge=True)
+        os.system('you-get -o {} {}'.format(path, link))
+    except:
+        pass
+
+def linktodoipdf(link):
+    try:
+        r = requests.get('https://sci-hub.se/{}'.format(link), headers=headers, timeout=1)
+        r.encoding = 'utf-8'
+        fulltext = r.text
+        rawdoi = fulltext.split("doi = '")[1].split("';")[0]
+        doi = 'https://doi.org/{}'.format(rawdoi)
+        pdflink = fulltext.split('iframe src = "')[1].split('" id')[0]
+        if 'https' not in pdflink:
+            pdflink = 'https:{}'.format(pdflink)
+        return 'paper', doi, pdflink
+    except:
+        try:
+            # open source article
+            r = requests.get(link, headers=headers, timeout=1)
+            r.encoding = 'utf-8'
+            fulltext = r.text
+            pdflink = fulltext.split('_pdf_url" content="')[1].split('"')[0]
+            return 'paper', link, pdflink
+        except:
+            # non paper website
+            return 'web','',''

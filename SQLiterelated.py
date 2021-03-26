@@ -37,7 +37,7 @@ def getalltags():
     # read all tag column
     query.exec("SELECT tag FROM alldata ORDER BY link")
     # save tags into a list
-    data = ['#like','#deleted','#later','#settings']
+    data = ['#like', '#deleted', '#later', '#settings', '#recent']
     while query.next():
         data += query.value(0).split()
     # remove the repeated tags
@@ -96,20 +96,23 @@ def operation_getbytag2(tag = ''):
     return head+tag+foot
 
 def operation_getbytag3(tag = ''):
-     # decide which database we use
-    dbtablename = 'deleteddata' if '#deleted' in tag else 'alldata'
+    if tag == '#recent' or tag == '#Recent':
+        return "SELECT birthday, title, link, comment, tag, pixmap FROM alldata ORDER BY birthday DESC LIMIT 20"
+    else:
+         # decide which database we use
+        dbtablename = 'deleteddata' if '#deleted' in tag else 'alldata'
 
-    # create an operation which search all tags inputs.
-    head = "SELECT birthday, title, link, comment, tag, pixmap FROM {} WHERE (tag LIKE '%".format(dbtablename)
+        # create an operation which search all tags inputs.
+        head = "SELECT birthday, title, link, comment, tag, pixmap FROM {} WHERE (tag LIKE '%".format(dbtablename)
 
-    # remove extra space
-    tag = tag.replace(' or ',"%')OR(tagLIKE'%")
-    tag = tag.replace(' ', "%' AND tag LIKE '%")
-    tag = tag.replace(')OR(', ') OR (')
-    tag = tag.replace("tagLIKE'%", "tag LIKE '%")
+        # remove extra space
+        tag = tag.replace(' or ',"%')OR(tagLIKE'%")
+        tag = tag.replace(' ', "%' AND tag LIKE '%")
+        tag = tag.replace(')OR(', ') OR (')
+        tag = tag.replace("tagLIKE'%", "tag LIKE '%")
 
-    foot = "%') ORDER BY birthday"
-    return head+tag+foot
+        foot = "%') ORDER BY birthday"
+        return head+tag+foot
 
 def getlinkbybirthday(birthday):
     query = QSqlQuery()
@@ -363,7 +366,6 @@ def alltaginhierarchy():
     # remove the repeated tags
     return list(set(data))
 
-
 def addhierarchy(tag,children):
     query = QSqlQuery()
     query.prepare("INSERT INTO hierarchy (tag, children)"
@@ -372,12 +374,10 @@ def addhierarchy(tag,children):
     query.bindValue(":children", children)
     query.exec()
 
-
 def deletehierarchy(tag):
     # first delete tag
     query = QSqlQuery()
     query.exec("DELETE FROM hierarchy WHERE tag='{}'".format(tag))
-
 
 def removechild(tag,child):
     query = QSqlQuery()
@@ -448,15 +448,15 @@ def expandstr(tag):
         sumlist = result.split()
         for item in sumlist:
             tag += ' {}'.format(item)
-            # this children might contain new children
-            query.exec("SELECT children FROM hierarchy WHERE tag LIKE '{}'".format(item))
-            query.next()
-            result = query.value(0)
-            if result != None:
-                newlist = result.split()
-                for newitem in newlist:
-                    if newitem not in sumlist and newitem != tag:
-                        sumlist.append(newitem)
+            # # this children might contain new children
+            # query.exec("SELECT children FROM hierarchy WHERE tag LIKE '{}'".format(item))
+            # query.next()
+            # result = query.value(0)
+            # if result != None:
+            #     newlist = result.split()
+            #     for newitem in newlist:
+            #         if newitem not in sumlist and newitem != tag:
+            #             sumlist.append(newitem)
 
     return tag
 

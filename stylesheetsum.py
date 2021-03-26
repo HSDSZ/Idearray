@@ -32,30 +32,30 @@ hsdsz = '''
      QLabel
      {background-image : url(:head.png);}
      '''
-mini = ''' 
+down = ''' 
      QPushButton
-     {background-image : url(:miniwin.png);
+     {background-image : url(:down.png);
      border-radius: 5px;
      border-width: 1px;
      border-color: rgba(244,244,244,0);
      background-color: rgba(244,244,244,0);
      border-style: outset;}
      QPushButton:hover
-     {background-image : url(:miniwin hover.png);
+     {background-image : url(:down hover.png);
      background-color: white;}
      QPushButton:pressed
      {background-color: gray;}
      '''
-nonmini = ''' 
+up = ''' 
      QPushButton
-     {background-image : url(:nonmini.png);
+     {background-image : url(:up.png);
      border-radius: 5px;
      border-width: 1px;
      border-color: rgba(244,244,244,0);
      background-color: rgba(244,244,244,0);
      border-style: outset;}
      QPushButton:hover
-     {background-image : url(:nonmini hover.png);
+     {background-image : url(:up hover.png);
      background-color: white;}
      QPushButton:pressed
      {background-color: gray;}

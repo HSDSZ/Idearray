@@ -143,7 +143,10 @@ class ImageWidget(QLabel):
         self.title.move(0, picheight)
 
         # preview icon
-        self.previewbutton = PreviewButton(self, self.linktype)
+        if linktype == 'paper':
+            self.previewbutton = PreviewButton(self, 'pdf')
+        else:
+            self.previewbutton = PreviewButton(self, self.linktype)
         self.previewbutton.setFixedSize(40, 30)
         self.previewbutton.move(int(picwidth / 2)-20, int(picheight / 2)-15)
         self.previewbutton.hide()
@@ -194,8 +197,7 @@ class ImageWidget(QLabel):
 
     # slot function
     def openlink(self):
-        linktype = getlinktype(self.link)
-        if linktype == 'web' or linktype == 'youtube' or linktype == 'bilibili':
+        if istypeolvid(self.linktype) or self.linktype == 'web':
             os.system("start {}".format(self.link))
         else:
             os.startfile(self.link)
@@ -252,16 +254,17 @@ class ImageWidget(QLabel):
             self.parent.tagarea.showtags(self.birthday)
 
     def download(self):
-        self.folderpath = QFileDialog.getExistingDirectory(None, 'Select a folder:', '/')
+        if istypeolvid(self.linktype):
+            self.folderpath = QFileDialog.getExistingDirectory(None, 'Select a folder:', '/')
 
-        if self.folderpath != '':
-            self.work = BkgrndThread(self, link=self.link, path=self.folderpath)
-            self.work.start()
-            # downloadvideo(self.link,self.folderpath)
+            if self.folderpath != '':
+                self.work = BkgrndThread(self, link=self.link, path=self.folderpath)
+                self.work.start()
+                # downloadvideo(self.link,self.folderpath)
 
     def showpreview(self):
-        self.previewwindow = WebPreview2()
-        self.previewwindow.preview(self.link)
+        self.previewwindow = WebPreview()
+        self.previewwindow.preview(self.link,self.linktype)
         self.previewwindow.show()
         # a popup window to show the preview of the link
 
@@ -289,6 +292,7 @@ class ImageWidget(QLabel):
             self.parent.piclabel.showpixandtitle(self.birthday)
             # set the link
             self.parent.linkline.linkline.setText(self.link)
+            self.parent.toolarea.show()
 
     # overwrite function
     def enterEvent(self, *args, **kwargs):
@@ -311,10 +315,6 @@ class ImageWidget(QLabel):
         else:
             self.deletebutton.setStyleSheet(todeletestyle)
 
-        if self.linktype == 'youtube' or self.linktype == 'bilibili':
-            self.downloadbutton.show()
-        else:
-            self.downloadbutton.hide()
 
         title = gettitlebybirthday(self.birthday)
         if title != self.title.toPlainText():
@@ -328,7 +328,7 @@ class ImageWidget(QLabel):
         self.previewbutton.hide()
 
 class PreviewButton(QPushButton):
-    def __init__(self,parent = None, linktype = 'unknown'):
+    def __init__(self,parent=None, linktype = 'unknown'):
         super(PreviewButton, self).__init__(parent)
         self.parent = parent
         try:
@@ -341,46 +341,13 @@ class PreviewButton(QPushButton):
     def leaveEvent(self, *args, **kwargs):
         self.setCursor(QCursor(Qt.ArrowCursor))
 
-class WebPreview(QWidget):
-    def __init__(self, parent = None):
+class WebPreview(QWebEngineView):
+    def __init__(self, parent=None):
         super(WebPreview, self).__init__(parent)
-        self.webengine = QWebEngineView()
-        self.webengine.page().settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
-        self.webengine.page().settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
-        self.webengine.resize(1200,900)
-
-        button1 = QPushButton()
-        button1.setFixedSize(20,20)
-        gap = QLabel()
-        hlyout = QHBoxLayout()
-        hlyout.addWidget(button1)
-        hlyout.addWidget(gap)
-        vlayout = QVBoxLayout()
-        vlayout.addWidget(self.webengine)
-        vlayout.addLayout(hlyout)
-        self.setLayout(vlayout)
-
-        button1.clicked.connect(self.zoom)
-
-    def zoom(self):
-        pass
-
-    def preview(self,link):
-        self.webengine.load(QUrl(link))
-
-    def closeEvent(self, a0: QCloseEvent) -> None:
-        self.webengine.close()
-        self.close()
-
-class WebPreview2(QWebEngineView):
-    def __init__(self, parent = None):
-        super(WebPreview2, self).__init__(parent)
         self.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
-        self.settings().setAttribute(QWebEngineSettings.PdfViewerEnabled, True)
         self.resize(1000,900)
 
-    def preview(self,link):
-        linktype = getlinktype(link)
+    def preview(self,link,linktype):
         if linktype == 'pdf':
             self.load(QUrl.fromUserInput('{}?file={}'.format(PDFJS, link)))
         else:
@@ -466,7 +433,7 @@ class Table(QTableWidget):
         if row != -1:
             birthday = int(self.item(row,4).text())
             link = self.item(row,1).text()
-            linktype = getlinktype(link)
+            linktype = self.item(row, 2).text().split(' ')[0]# linktype is the first tag
             self.action5.setEnabled(istypeexist(linktype))
             orignaltag = gettagbybirthday(birthday)
             isliked = '#like' in orignaltag
@@ -524,8 +491,8 @@ class Table(QTableWidget):
                     os.startfile(link)
 
             elif self.action == self.action5:
-                self.previewwindow = WebPreview2()
-                self.previewwindow.preview(link)
+                self.previewwindow = WebPreview()
+                self.previewwindow.preview(link,linktype)
                 self.previewwindow.show()
 
     def enterEvent(self, *args, **kwargs):
