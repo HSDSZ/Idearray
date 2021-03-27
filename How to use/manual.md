@@ -1,4 +1,4 @@
-### 1. A quick way to save your loved websites or local files
+### 1. A quick way to save your beloved websites or local files
 simply drag the website or local file in\
 ![1](https://user-images.githubusercontent.com/36077492/112601255-318ecc00-8e4d-11eb-9a98-26394822eecc.gif)
 ### 2. Fully-featured search operation
