@@ -347,11 +347,14 @@ class WebPreview(QWebEngineView):
         self.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
         self.resize(1000,900)
 
-    def preview(self,link,linktype):
-        if linktype == 'pdf':
+    def preview(self, link, linktype):
+        if linktype == 'pdf' or linktype == 'paper':
             self.load(QUrl.fromUserInput('{}?file={}'.format(PDFJS, link)))
         else:
             self.load(QUrl(link))
+        # self.load(QUrl.fromUserInput('{}?file={}'.format(PDFJS, link)))
+        # self.load(QUrl('{}?file={}'.format(PDFJS, link)))
+        #self.load(QUrl('file:///./pdfjs/web/viewer.html?file=https%3A%2F%2Fwww.nature.com%2Farticles%2Fs41524-019-0221-0.pdf'))
 
 class Table(QTableWidget):
     def __init__(self, parent = None):
@@ -561,7 +564,6 @@ class MainTab(QTabWidget):
     def updatelist(self, index):
         self.removeTab(index)
         del self.mainwindow.birthdaylistsum[index]
-
 
 class BkgrndThread(QThread):
     def __init__(self, parent=None, link='', path=''):
