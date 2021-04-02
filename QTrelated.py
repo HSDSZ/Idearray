@@ -4,7 +4,6 @@ from PyQt5.QtCore import QBuffer,QByteArray,QIODevice
 from PyQt5.QtGui import QPixmap
 # this function generate the window of a given QMainwindow class
 def buildwindow(WindowClass):
-
     sys.argv.append('--disable-web-security')
     # system operation
     app = QApplication(sys.argv)

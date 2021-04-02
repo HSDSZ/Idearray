@@ -166,8 +166,36 @@ tableversion = '''
                  background-color: #F0F0F0;}
                  '''
 
+# style of camera button. used to screenshot
+camerabutton = ''' 
+            QPushButton
+            {background-image : url(:camera.png);
+            border-radius: 5px;
+            border-width: 1px;
+            border-color: rgba(244,244,244,0);
+            background-color: rgba(244,244,244,0);
+            border-style: outset;}
+            QPushButton:hover
+            {background-color: white;}
+            QPushButton:pressed
+            {background-color: gray;}
+            '''
+# style of removable button of the whole detail area
+removebuton2 = ''' 
+            QPushButton
+            {background-image : url(:remove2.png);
+            border-radius: 5px;
+            border-width: 1px;
+            border-color: rgba(244,244,244,0);
+            background-color: rgba(244,244,244,0);
+            border-style: outset;}
+            QPushButton:hover
+            {background-color: white;}
+            QPushButton:pressed
+            {background-color: gray;}
+            '''
 
-# style of removable button
+# style of removable button of tags
 removebuton = ''' 
             QPushButton
             {background-image : url(:remove.png);

@@ -180,7 +180,9 @@ class TitleBar(QLabel):
             pass
 
     def shutdown(self):
-        self.mainwindow.previewwindow.close()
+        self.mainwindow.tempengine.close()
+        self.mainwindow.grabwin.close()
+        self.mainwindow.settingwin.close()
         self.mainwindow.dbcon.close()
         self.mainwindow.close()
 

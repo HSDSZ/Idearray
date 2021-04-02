@@ -143,10 +143,10 @@ class ImageWidget(QLabel):
         self.title.move(0, picheight)
 
         # preview icon
-        if linktype == 'paper':
-            self.previewbutton = PreviewButton(self, 'pdf')
-        else:
-            self.previewbutton = PreviewButton(self, self.linktype)
+        # if linktype == 'paper':
+        #     self.previewbutton = PreviewButton(self, 'pdf')
+        # else:
+        self.previewbutton = PreviewButton(self, self.linktype)
         self.previewbutton.setFixedSize(40, 30)
         self.previewbutton.move(int(picwidth / 2)-20, int(picheight / 2)-15)
         self.previewbutton.hide()
@@ -187,7 +187,6 @@ class ImageWidget(QLabel):
         self.bar.hide()
 
         # signal
-        # self.title.textChanged.connect(self.titleeditted)
         self.linkbutton.clicked.connect(self.openlink)
         self.likebutton.clicked.connect(self.changelike)
         self.laterbutton.clicked.connect(self.changelater)
@@ -255,29 +254,27 @@ class ImageWidget(QLabel):
 
     def download(self):
         if istypeolvid(self.linktype):
-            self.folderpath = QFileDialog.getExistingDirectory(None, 'Select a folder:', '/')
-
-            if self.folderpath != '':
-                self.work = BkgrndThread(self, link=self.link, path=self.folderpath)
+            folder = QFileDialog.getExistingDirectory(None, 'Select a folder:', '/')
+            if folder != '':
+                self.work = BkgrndThread(self, link=self.link, path=folder)
                 self.work.start()
-                # downloadvideo(self.link,self.folderpath)
+            return
+        elif self.linktype == 'paper':
+            try:
+                document = requests.get(self.link, headers=headers).content
+                filename = savabletitle(self.title.toPlainText())
+                filepath = QFileDialog.getSaveFileName(self, 'Save paper', '{}.pdf'.format(filename), 'PDF (*.pdf)')[0]
+                if filepath != '':
+                    with open(filepath, 'wb') as f:
+                        f.write(document)
+            except:
+                pass
 
     def showpreview(self):
         self.previewwindow = WebPreview()
-        self.previewwindow.preview(self.link,self.linktype)
+        self.previewwindow.preview(self.link, self.linktype)
         self.previewwindow.show()
         # a popup window to show the preview of the link
-
-    def titleeditted(self):
-        focused_widget = QApplication.focusWidget()
-        newtitle = self.title.toPlainText()
-        if isinstance(focused_widget, QTextEdit) and self.title.iseditmode and newtitle != '':
-            updatebybirthday(self.birthday, title=self.title.toPlainText())
-            self.parent.piclabel.title.setText(self.title.toPlainText())
-
-            # maintab index
-            excludeindex = self.parent.maintab.currentIndex()
-            self.parent.triggermodify(self.birthday, 'title', extrude = [excludeindex, 'image'])
 
     def mousePressEvent(self, QMouseEvent):
         if QMouseEvent.button() == Qt.LeftButton:
@@ -328,7 +325,7 @@ class ImageWidget(QLabel):
         self.previewbutton.hide()
 
 class PreviewButton(QPushButton):
-    def __init__(self,parent=None, linktype = 'unknown'):
+    def __init__(self, parent=None, linktype = 'unknown'):
         super(PreviewButton, self).__init__(parent)
         self.parent = parent
         try:
@@ -345,16 +342,13 @@ class WebPreview(QWebEngineView):
     def __init__(self, parent=None):
         super(WebPreview, self).__init__(parent)
         self.settings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
-        self.resize(1000,900)
+        self.resize(1000, 900)
 
     def preview(self, link, linktype):
         if linktype == 'pdf' or linktype == 'paper':
             self.load(QUrl.fromUserInput('{}?file={}'.format(PDFJS, link)))
         else:
             self.load(QUrl(link))
-        # self.load(QUrl.fromUserInput('{}?file={}'.format(PDFJS, link)))
-        # self.load(QUrl('{}?file={}'.format(PDFJS, link)))
-        #self.load(QUrl('file:///./pdfjs/web/viewer.html?file=https%3A%2F%2Fwww.nature.com%2Farticles%2Fs41524-019-0221-0.pdf'))
 
 class Table(QTableWidget):
     def __init__(self, parent = None):
@@ -389,7 +383,6 @@ class Table(QTableWidget):
         self.action5 = self.menu.addAction(u'preview')
         # preview window
         self.currentCellChanged.connect(self.updaterightarea)
-        self.cellChanged.connect(self.changemade)
         self.customContextMenuRequested.connect(self.generateMenu)
 
     def updaterightarea(self,currentRow,currentColumn,previousRow, previousColumn):
@@ -407,29 +400,6 @@ class Table(QTableWidget):
                 link = getlinkbybirthday(birthday)
                 self.parent.linkline.linkline.setText(link)
 
-    def changemade(self,row,column):
-        if self.loadfinished and self.iseditmode and column != 3:
-            # maintab index
-            excludeindex = self.parent.maintab.currentIndex()
-            birthday = int(self.item(row,4).text())
-            newtext = self.item(row,column).text()
-            if column == 1:
-                #update title
-                updatebybirthday(birthday,title= newtext)
-                self.parent.piclabel.title.setText(newtext)
-                self.parent.triggermodify(birthday, 'title', extrude = [excludeindex, 'table'])
-            elif column == 2:
-                # update link
-                updatebybirthday(birthday,link= newtext)
-                self.parent.linkline.linkline.setText(newtext)
-                self.parent.triggermodify(birthday, 'link', extrude = [excludeindex, 'table'])
-            elif column == 4:
-                # update comment
-                updatebybirthday(birthday,comment= newtext)
-                self.parent.commentarea.showcomment(birthday)
-                self.parent.triggermodify(birthday, 'comment', extrude = [excludeindex, 'table'])
-            else:
-                pass
 
     def generateMenu(self, pos):
         row = self.currentRow()
@@ -565,6 +535,7 @@ class MainTab(QTabWidget):
         self.removeTab(index)
         del self.mainwindow.birthdaylistsum[index]
 
+
 class BkgrndThread(QThread):
     def __init__(self, parent=None, link='', path=''):
         super(BkgrndThread, self).__init__(parent)
@@ -572,5 +543,5 @@ class BkgrndThread(QThread):
         self.folderpath = path
 
     def run(self):
-        downloadvideo(self.link,self.folderpath)
+        downloadvideo(self.link, self.folderpath)
         self.quit()

@@ -108,7 +108,7 @@ def linktopixmap(link):
     qpixmap.loadFromData(data)
     return qpixmap
 
-def resizepixmap(qpixmap,width, height, area = 'middle'):
+def resizepixmap(qpixmap, width, height, area = 'middle'):
 
     rawwdith = qpixmap.size().width()
     rawheight = qpixmap.size().height()
@@ -143,6 +143,17 @@ def refinelink(link, linktype):
     else:
         newlink = link.split('file:///')[1]
         return newlink
+
+def savabletitle(title):
+    title = title.replace('/', '')
+    title = title.replace('\\', '')
+    title = title.replace('<', '')
+    title = title.replace('>', '')
+    title = title.replace(':', '')
+    title = title.replace('?', '')
+    title = title.replace('"', '')
+    title = title.replace('|', '')
+    return title
 
 def getlinktitle(link, linktype, document = None):
 
@@ -338,3 +349,4 @@ def linktodoipdf(link):
         except:
             # non paper website
             return 'web','',''
+

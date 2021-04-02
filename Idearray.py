@@ -3,14 +3,15 @@ from tabcontent import *
 from titlebar import *
 from detailsarea import *
 import fitz
-from PyQt5.QtWidgets import QMainWindow, QSizeGrip,QListWidget,QCheckBox,QTableWidgetItem
+from PyQt5.QtWidgets import QMainWindow,QSizeGrip,QListWidget,QCheckBox,QTableWidgetItem
 from PyQt5.QtSql import QSqlDatabase
 from PyQt5.QtGui import QImage,QIcon,QIntValidator
-
+import mss
 
 class Mywindow(QMainWindow):
     def __init__(self):
         super(Mywindow, self).__init__()
+        self.move(50, 50)
         self.setWindowIcon(QIcon(':HSDSZ.ico'))
         self.birthdaylistsum = []
         self.initUI()
@@ -26,13 +27,18 @@ class Mywindow(QMainWindow):
         self.dbcon.open()
         createtable()
         self.dbcon.commit()
+
+        # hidden windows
+        self.tempengine = Webengine(self.dbcon, self.piclabel)  #used to screenshot web
+        self.grabwin = Grabber(self)
+        self.settingwin = SettingWindow()
+
         self.settingwin.page1.le2.setText(startupDBpath)
         self.settingwin.page1.le.setText(startupDBpath)
         self.settingwin.page1.widthle.setText(str(startupwidth))
         self.settingwin.page1.check1.setChecked(startuplook)
         self.settingwin.page1.heightle.setText(str(startupheight))
         self.settingwin.page2.taglist.addItems(alltaginhierarchy())
-
         # singals
         self.settingwin.page1.bt.clicked.connect(self.chooseDB)
         self.settingwin.page1.bt2.clicked.connect(self.newDB)
@@ -45,13 +51,10 @@ class Mywindow(QMainWindow):
         # signal
         self.titlebar.searchbar.returnPressed.connect(self.actionmade)
         self.titlebar.searchbar.dropped.connect(self.handledropped)
+        self.piclabel.capturebutton.clicked.connect(self.grabwin.show)
 
     def initUI(self):
         self.setWindowTitle("idearray")
-
-        # create a previewwindow and setting window
-        self.previewwindow = QWebEngineView()
-        self.settingwin = SettingWindow()
 
         # titlebar and maintab
         self.titlebar = TitleBar(self)
@@ -67,7 +70,7 @@ class Mywindow(QMainWindow):
         self.commentarea.setFixedSize(picwidth, 100)
         self.commentarea.setPlaceholderText('Here presents your comment')
         self.commentarea.setStyleSheet('border: none')
-        self.linkline = ButtonLink(self)
+        self.linkline = ButtonLink(parent=self)
 
         # set the hlayout to place tag and comment area
         v2layout = QVBoxLayout()
@@ -121,40 +124,42 @@ class Mywindow(QMainWindow):
         # alternatively, widget.raise_() can be used
         self.cornerGrips = [QSizeGrip(self) for i in range(4)]
 
-    def triggermodify(self, birthday, source='title', extrude=[-1,'']):
+    def triggermodify(self, birthday, source='title'):
         for i in range(len(self.birthdaylistsum)):
             birthdaylist = self.birthdaylistsum[i]
             if birthday in birthdaylist:
                 # get the index of the birthday in the birthdaylist
                 index = birthdaylist.index(birthday)
-                # get the tabpage
+                # get the table and image widget
                 tabpage = self.maintab.widget(i)
-                #update tables
-                if not (extrude == [i, 'table']):
-                    # refresh table
-                    tablepage = tabpage.tablepage
-                    # update tables
-                    if source == 'title':
-                        newtitle = gettitlebybirthday(birthday)
-                        tablepage.item(index,0).setText(newtitle)
-                    elif source == 'link':
-                        newlink = getlinkbybirthday(birthday)
-                        tablepage.item(index,1).setText(newlink)
-                    elif source == 'comment':
-                        newcomment = getcommentbybirthday(birthday)
-                        tablepage.item(index,3).setText(newcomment)
-                    elif source == 'tag':
-                        newtag = gettagbybirthday(birthday)
-                        tablepage.item(index,2).setText(newtag)
+                # get table
+                tablepage = tabpage.tablepage
+                # get flayout holder
+                holder = tabpage.imagepage.widget()
+                # get the specific image widget
+                widget = holder.flayout.itemAt(index).widget()
 
-                # update images
+                # update tables
                 if source == 'title':
-                    # if title is changed, also refresh the image page
-                    holder = tabpage.imagepage.widget()
-                    # get the specific image widget
-                    widget = holder.flayout.itemAt(index).widget()
                     newtitle = gettitlebybirthday(birthday)
+                    tablepage.item(index,0).setText(newtitle)
                     widget.title.setText(newtitle)
+                elif source == 'link':
+                    newlink = getlinkbybirthday(birthday)
+                    tablepage.item(index,1).setText(newlink)
+                    widget.link = newlink
+                elif source == 'pixmap':
+                    newpixmap = getpixmapbybirthday(birthday)
+                    widget.setPixmap(byte2pixmap(newpixmap))
+                elif source == 'comment':
+                    newcomment = getcommentbybirthday(birthday)
+                    tablepage.item(index,3).setText(newcomment)
+                elif source == 'tag':
+                    newtag = gettagbybirthday(birthday)
+                    tablepage.item(index, 2).setText(newtag)
+                else:
+                    pass
+
 
     # slot functions
     def chooseDB(self):
@@ -253,7 +258,7 @@ class Mywindow(QMainWindow):
                 linktype = tag.split(' ')[0]
                 pixmap = query.value(5) if query.value(5) != '' else authorpage
                 # create a widget to be added
-                singleimageitem = ImageWidget(self, holder.flayout,birthday,link,linktype)
+                singleimageitem = ImageWidget(self, holder.flayout, birthday, link, linktype)
                 singleimageitem.title.setText(title)
                 singleimageitem.index = i
                 singleimageitem.dbcon = self.dbcon
@@ -267,18 +272,20 @@ class Mywindow(QMainWindow):
 
                 tablepage.insertRow(i)
                 singletableitem = QTableWidgetItem(str(birthday))
-                singletableitem.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
+                singletableitem.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
                 singletableitem.setTextAlignment(Qt.AlignRight)
                 tablepage.setItem(i, 4, singletableitem)
                 singletableitem = QTableWidgetItem(title)
+                singletableitem.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
                 tablepage.setItem(i, 0, singletableitem)
                 singletableitem = QTableWidgetItem(link)
-                singletableitem.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
+                singletableitem.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
                 tablepage.setItem(i, 1, singletableitem)
                 singletableitem = QTableWidgetItem(tag)
-                singletableitem.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
+                singletableitem.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
                 tablepage.setItem(i, 2, singletableitem)
                 singletableitem = QTableWidgetItem(comment)
+                singletableitem.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
                 tablepage.setItem(i, 3, singletableitem)
 
                 QApplication.processEvents()
@@ -337,7 +344,6 @@ class Mywindow(QMainWindow):
         # set pixmap to qlabel and save this new pixmap to database
         if linktype == 'web' or linktype == 'paper':
             self.piclabel.setPixmap(QPixmap(':loading.png'))
-            self.tempengine = Webengine(self.dbcon,self.piclabel)
             self.tempengine.setZoomFactor(0.3)
             self.tempengine.show()
             self.tempengine.birthday = birthday
@@ -742,7 +748,7 @@ class HierachyPage(QWidget):
         parents = searchparent(search_text)
         self.parenttext.setText(parents)
 
-        item = self.taglist.findItems(search_text,Qt.MatchExactly)[0]
+        item = self.taglist.findItems(search_text, Qt.MatchExactly)[0]
         self.taglist.setCurrentItem(item)
 
     def deleteitem(self):
@@ -781,6 +787,8 @@ class HierachyPage(QWidget):
             addparent(tag,parent)
             self.taglist.clear()
             self.taglist.addItems(alltaginhierarchy())
+
+
 
 
 if __name__ == "__main__":
