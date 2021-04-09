@@ -176,6 +176,7 @@ class TitleBar(QLabel):
             self.mainwindow.showNormal()
             self.mainwindow.resize(picwidth + 10, 60)
             self.mainwindow.resize(picwidth + 10, 60)
+
         else:
             pass
 

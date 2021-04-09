@@ -244,8 +244,14 @@ class RemovableButton(QWidget):
         self.setLayout(hlayout)
 
         # signals
-        self.linkbutton.clicked.connect(lambda: self.parent.newtab(self.linkbutton.text()))
+        # self.linkbutton.clicked.connect(lambda: self.parent.newtab(self.linkbutton.text()))
+        self.linkbutton.clicked.connect(self.linkclicked)
         self.closebutton.clicked.connect(lambda: self.parent.removetag(self.linkbutton.text()))
+
+    def linkclicked(self):
+        if self.parent.mainwindow.titlebar.mode == 'detail':
+            self.parent.mainwindow.titlebar.swithcmodeto('normal')
+        self.parent.newtab(self.linkbutton.text())
 
     def setText(self, text):
         self.linkbutton.setText(text)
@@ -284,6 +290,7 @@ class ButtonLink(QWidget):
         updatebybirthday(birthday=itembirthday, link=self.linkline.text())
         # update in table and images
         self.mainwindow.triggermodify(itembirthday, 'link')
+
 
 class Grabber(QWidget):
     def __init__(self, mainwin=None):

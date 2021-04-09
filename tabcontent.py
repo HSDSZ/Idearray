@@ -199,7 +199,10 @@ class ImageWidget(QLabel):
         if istypeolvid(self.linktype) or self.linktype == 'web':
             os.system("start {}".format(self.link))
         else:
-            os.startfile(self.link)
+            try:
+                os.startfile(self.link)
+            except:
+                pass
 
     def changelike(self):
         # check if #like tag is in. If in means like it
@@ -346,7 +349,10 @@ class WebPreview(QWebEngineView):
 
     def preview(self, link, linktype):
         if linktype == 'pdf' or linktype == 'paper':
-            self.load(QUrl.fromUserInput('{}?file={}'.format(PDFJS, link)))
+            if '.pdf' in link:
+                self.load(QUrl.fromUserInput('{}?file={}'.format(PDFJS, link)))
+            else:
+                self.load(QUrl(link))
         else:
             self.load(QUrl(link))
 
