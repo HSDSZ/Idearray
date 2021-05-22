@@ -160,7 +160,6 @@ class Mywindow(QMainWindow):
                 else:
                     pass
 
-
     # slot functions
     def chooseDB(self):
         oldpath = self.dbpath
@@ -210,7 +209,7 @@ class Mywindow(QMainWindow):
         elif fulltext == '':
             pass
         else:
-            if self.titlebar.mode == 'bar':
+            if self.titlebar.mode == 'bar' or self.titlebar.mode == 'detail':
                 self.titlebar.swithcmodeto('normal')
             # if you input other than #setting, you do add tab
             # pagetitle is the words appear on the tab
