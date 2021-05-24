@@ -298,6 +298,8 @@ class Mywindow(QMainWindow):
         currentmode = self.titlebar.mode
         if currentmode == 'bar':
             self.titlebar.swithcmodeto('detail')
+        elif currentmode == 'normal' or currentmode == 'max':
+            self.toolarea.show()
 
         # get the birthday, link, linktype, these shared content. set link
         birthday = now()
