@@ -137,11 +137,13 @@ def gettitlebybirthday(birthday):
         return query.value(0)
 
 def getpixmapbybirthday(birthday):
+
     query = QSqlQuery()
     query.exec('SELECT pixmap FROM alldata WHERE birthday = {}'.format(birthday))
     query.next()
     if query.value(0) != None:
-        return query.value(0)
+        pix = query.value(0)
+        return pix if pix != '' else authorpage
     else:
         query.exec('SELECT pixmap FROM deleteddata WHERE birthday = {}'.format(birthday))
         query.next()
@@ -149,6 +151,8 @@ def getpixmapbybirthday(birthday):
             return query.value(0)
         else:
             return authorpage
+
+
 
 def getcommentbybirthday(birthday):
     query = QSqlQuery()
@@ -465,7 +469,10 @@ if __name__ == "__main__":
     dbcon = QSqlDatabase.addDatabase("QSQLITE")
     dbcon.setDatabaseName('./idearray.db')
     dbcon.open()
-    query = QSqlQuery()
-    query.exec("SELECT tag FROM alldata ORDER BY link")
-    while query.next():
-        print(query.value(0))
+    # query = QSqlQuery()
+    # query.exec("SELECT tag FROM alldata ORDER BY link")
+    # while query.next():
+    #     print(query.value(0))
+
+    a = getpixmapbybirthday(20210610202045)
+    print(a)
